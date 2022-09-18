@@ -132,6 +132,7 @@ func (d StackData) Pow(input StackData) (StackData, error) {
 	return d, nil
 }
 
+
 func (d StackData) ChS() StackData {
 	d.flt = - d.flt
 	return d
@@ -188,6 +189,9 @@ func (s EnvState) Display() string {
 }
 
 func (s *EnvState) Parse(input string) {
+	if len(input) == 0 {
+		return
+	}
 	s.err = ""
 	switch input[0] {
 	case '+':
@@ -212,6 +216,14 @@ func (s *EnvState) Parse(input string) {
 		})
 	case 'd':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
+			return DefaultStackData(), nil
+		})
+	case 'e':
+		s.applyUnaryFunc(func(x StackData) (StackData, error) {
+			lines := strings.Split(x.str, "|")
+			for i := range(lines) {
+				s.Parse(lines[i])
+			}
 			return DefaultStackData(), nil
 		})
 	case 's':
