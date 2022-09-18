@@ -10,6 +10,7 @@ import (
 	"unsafe"
 	"syscall"
 	"bufio"
+	"math"
 )
 
 const(
@@ -99,26 +100,21 @@ func (d StackData) Plus(input StackData) (StackData, error) {
 
 func (d StackData) Mult(input StackData) (StackData, error) {
 	if d.dataType == Str || input.dataType == Str {
-		return StackData{}, errors.New("Multiplication not defined for strings")
+		return DefaultStackData(), errors.New("Multiplication not defined for strings")
 	}
-	result := d
-	if d.dataType != input.dataType {
-		return result, errors.New("Operand data types must match")
-	}
-	result.flt = d.flt * input.flt
-	return result, nil
+	d.flt *= input.flt
+	return d, nil
 }
 
 func (d StackData) Div(input StackData) (StackData, error) {
 	if d.dataType == Str || input.dataType == Str {
-		return StackData{}, errors.New("Division not defined for strings")
+		return DefaultStackData(), errors.New("Division not defined for strings")
 	}
-	result := d
 	if input.flt == 0 {
-		return input, errors.New("Division by zero is not defined")
+		return DefaultStackData(), errors.New("Division by zero is not defined")
 	}
-	result.flt = d.flt / input.flt
-	return result, nil
+	d.flt /= input.flt
+	return d, nil
 }
 
 func (d StackData) Minus(input StackData) (StackData, error) {
@@ -126,6 +122,14 @@ func (d StackData) Minus(input StackData) (StackData, error) {
 		return StackData{}, errors.New("Subtraction not defined for strings")
 	}
 	return d.Plus(input.ChS())
+}
+
+func (d StackData) Pow(input StackData) (StackData, error) {
+	if d.dataType == Str || input.dataType == Str {
+		return DefaultStackData(), errors.New("Power not defined for strings")
+	}
+	d.flt = math.Pow(d.flt, input.flt)
+	return d, nil
 }
 
 func (d StackData) ChS() StackData {
@@ -201,6 +205,10 @@ func (s *EnvState) Parse(input string) {
 	case '*':
 		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
 			return y.Mult(x)
+		})
+	case '^':
+		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
+			return y.Pow(x)
 		})
 	case 'd':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
