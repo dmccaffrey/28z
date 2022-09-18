@@ -42,12 +42,11 @@ type BinaryFunc func(x StackData, y StackData) (StackData, error)
 type StackData struct {
 	dataType byte
 	str string
-	num int64
 	flt float64
 }
 
 func DefaultStackData() StackData {
-	return StackData{Nil, "", 0, 0}
+	return StackData{Nil, "", 0}
 }
 
 func (d *StackData) Parse(s string) error {
@@ -62,7 +61,7 @@ func (d *StackData) Parse(s string) error {
 		s = s[1:]
 		res, err := strconv.ParseInt(s, 16, 64)
 		if err == nil {
-			d.num = res
+			d.flt = float64(res)
 		}
 		return err
 	case 'o':
@@ -70,7 +69,7 @@ func (d *StackData) Parse(s string) error {
 		s = s[1:]
 		res, err := strconv.ParseInt(s, 8, 64)
 		if err == nil {
-			d.num = res
+			d.flt = float64(res)
 		}
 		return err
 	default:
@@ -90,90 +89,67 @@ func (d StackData) Plus(input StackData) (StackData, error) {
 		return result, errors.New("Operand data types must match")
 	}
 	switch d.dataType {
-	case Flt:
-		result.flt = d.flt + input.flt
-	case Hex:
-		fallthrough
-	case Oct:
-		fallthrough
-	case Bin:
-		result.num = d.num + input.num
-	default:
+	case Str:
 		result.str = d.str + input.str
+	default:
+		result.flt = d.flt + input.flt
 	}
 	return result, nil
 }
 
 func (d StackData) Mult(input StackData) (StackData, error) {
-	if d.dataType == Str {
+	if d.dataType == Str || input.dataType == Str {
 		return StackData{}, errors.New("Multiplication not defined for strings")
 	}
 	result := d
 	if d.dataType != input.dataType {
 		return result, errors.New("Operand data types must match")
 	}
-	switch d.dataType {
-	case Flt:
-		result.flt = d.flt * input.flt
-	case Hex:
-		fallthrough
-	case Oct:
-		fallthrough
-	case Bin:
-		result.num = d.num * input.num
-	}
+	result.flt = d.flt * input.flt
 	return result, nil
 }
 
 func (d StackData) Div(input StackData) (StackData, error) {
-	if d.dataType == Str {
+	if d.dataType == Str || input.dataType == Str {
 		return StackData{}, errors.New("Division not defined for strings")
 	}
 	result := d
-	if d.dataType != input.dataType {
-		return result, errors.New("Operand data types must match")
-	}
-	switch d.dataType {
-	case Flt:
-		if input.flt == 0 {
-			return input, errors.New("Division by zero is not defined")
-		}
-		result.flt = d.flt / input.flt
-	case Hex:
-		fallthrough
-	case Oct:
-		fallthrough
-	case Bin:
-		result.num = d.num / input.num
+	if input.flt == 0 {
+		return input, errors.New("Division by zero is not defined")
 	}
 	return result, nil
 }
 
 func (d StackData) Minus(input StackData) (StackData, error) {
-	if d.dataType == Str {
+	if d.dataType == Str || input.dataType == Str {
 		return StackData{}, errors.New("Subtraction not defined for strings")
 	}
 	return d.Plus(input.ChS())
 }
 
 func (d StackData) ChS() StackData {
-	d.num = - d.num
 	d.flt = - d.flt
 	return d
 }
 
 func (d StackData) ToString() string {
+	stackStr := "?"
 	switch d.dataType {
 	case Str:
-		return fmt.Sprintf("%s", d.str)
+		stackStr = fmt.Sprintf("%s", d.str)
 	case Flt:
-		return fmt.Sprintf("%.8E", d.flt)
+		stackStr = fmt.Sprintf("%.8E", d.flt)
 	case Hex:
-		return fmt.Sprintf("%014x", d.num)
+		stackStr = fmt.Sprintf("%014x", d.flt)
 	case Oct:
-		return fmt.Sprintf("%014o", d.num)
+		stackStr = fmt.Sprintf("%014o", d.flt)
+	case Nil:
+		stackStr = ""
 	}
-	return ""
+	if len(stackStr) > 14 {
+		stackStr = stackStr[:11] + "..."
+	}
+	return stackStr
 }
 
 
@@ -181,27 +157,22 @@ type EnvState struct {
 	err string
 	overflow bool
 	stack []StackData
-	regs []int64
+	regs []StackData
 	console string
 }
 
 func (s EnvState) Display() string {
 	content := ""
-	content += fmt.Sprintf("%s %*s\n", "Registers", 17, "Stack")
-	content += fmt.Sprintf("%s %*s\n", strings.Repeat("-", 12), 29, strings.Repeat("-", 20))
+	content += fmt.Sprintf("%s\t\t%*s\n", "Registers", 17, "Stack")
+	content += fmt.Sprintf("%s\t\t%s\n", strings.Repeat("-", 22), strings.Repeat("-", 22))
 	end := MaxStackLen-1
 	for i := end; i >= 0; i-- {
-		suffix := byte('?')
-		stackString := ""
+		stackEntry := DefaultStackData()
 		if (i < len(s.stack)) {
 			stackIndex := len(s.stack) - i - 1
-			stackString = s.stack[stackIndex].ToString()
-			suffix = s.stack[stackIndex].dataType
-			if len(stackString) > 14 {
-				stackString = stackString[:11] + "..."
-			}
+			stackEntry = s.stack[stackIndex]
 		}
-		content += fmt.Sprintf("R%s: %08x %*s %d: %*s (%c)\n", string(i + 65), s.regs[i], 8, "", i, 14, stackString, suffix)
+		content += fmt.Sprintf("R%s: %*s (%c)\t\t%d: %*s (%c)\n", string(i + 65), 14, s.regs[i].ToString(), s.regs[i].dataType, i, 14, stackEntry.ToString(), stackEntry.dataType)
 	}
 	if len(s.err) != 0 {
 		content += fmt.Sprintf("\n<Err: %s>", s.err)
@@ -237,13 +208,10 @@ func (s *EnvState) Parse(input string) {
 			if (x.dataType == Str) {
 				reg = registerMap[x.str]
 			} else {
-				reg = int(x.num)
+				reg = int(x.flt)
 			}
 			if (reg < len(s.regs)-1) {
-				if y.dataType == Flt {
-					y.num = int64(y.flt)
-				}
-				s.regs[reg] = y.num
+				s.regs[reg] = y
 			} else {
 				return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register: reg=%d", reg))
 			}
@@ -255,15 +223,12 @@ func (s *EnvState) Parse(input string) {
 			if (x.dataType == Str) {
 				reg = registerMap[x.str]
 			} else {
-				reg = int(x.num)
+				reg = int(x.flt)
 			}
-			result := DefaultStackData()
 			if (reg < len(s.regs)-1) {
-				result.dataType = Hex
-				result.num = s.regs[reg]
-				return result, nil
+				return s.regs[reg], nil
 			}
-			return result, errors.New(fmt.Sprintf("Invalid register: reg=%d", reg))
+			return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register: reg=%d", reg))
 		})
 	case 'p':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
@@ -363,7 +328,11 @@ func (s *EnvState) Pop() StackData {
 }
 
 func NewEnvState() EnvState {
-	return EnvState{ "", false, []StackData{}, make([]int64, MaxStackLen), ""}
+	state := EnvState{ "", false, []StackData{}, make([]StackData, MaxStackLen), ""}
+	for i := range(state.regs) {
+		state.regs[i] = DefaultStackData()
+	}
+	return state
 }
 
 type windowSize struct {
