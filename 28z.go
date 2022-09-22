@@ -43,7 +43,8 @@ var constsMap = map[string]float64 {
 	"$tau": math.Pi * 2,
 	"$e": math.E,
 	"$phi": math.Phi,
-	"$maxf": math.MaxFloat64,
+	//"$maxf": math.MaxFloat64, ????
+	"$maxf": math.MaxInt64,
 }
 
 
@@ -266,7 +267,7 @@ func (s *EnvState) Parse(input string) bool {
 		})
 	case '`':
 		if s.regs[registerMap["RC"]].dataType == Flt && s.regs[registerMap["RC"]].flt == 1 {
-			s.Parse(input[1:])
+			return s.Parse(input[1:])
 		}
 	case '@':
 		if len(input) < 3 {
@@ -287,6 +288,11 @@ func (s *EnvState) Parse(input string) bool {
 	case 'd':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
 			return DefaultStackData(), nil
+		})
+	case 'i':
+		s.applyUnaryFunc(func(x StackData) (StackData, error){
+			x.flt = float64(int(x.flt))
+			return x, nil
 		})
 	case 'e':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
@@ -328,7 +334,7 @@ func (s *EnvState) Parse(input string) bool {
 			return x, nil
 		})
 	case 'l':
-		for ; s.regs[1].flt>0; s.regs[1].flt-- {
+		for ; s.regs[1].flt>0; s.regs[1].flt -= 1.0 {
 			lines := strings.Split(s.regs[0].str, "|")
 			for i := range(lines) {
 				if len(lines[i]) == 0 {
