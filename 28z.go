@@ -42,6 +42,8 @@ func (w *TermWriter) Publish(content string) {
 }
 
 func main() {
+	loadRom()
+	//os.Exit(0)
 	//state := NewEnvState(DebugTermWriter())
 	state := NewEnvState(InteractiveTermWriter())
 	state.Display("")
