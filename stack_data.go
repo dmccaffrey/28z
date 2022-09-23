@@ -115,16 +115,16 @@ func (d StackData) ToString() string {
 	case Str:
 		stackStr = fmt.Sprintf("%s", d.str)
 	case Flt:
-		stackStr = fmt.Sprintf("%.8E", d.flt)
+		stackStr = fmt.Sprintf("%.10E", d.flt)
 	case Hex:
-		stackStr = fmt.Sprintf("%014x", d.flt)
+		stackStr = fmt.Sprintf("%019x", d.flt)
 	case Oct:
-		stackStr = fmt.Sprintf("%014o", d.flt)
+		stackStr = fmt.Sprintf("%019o", d.flt)
 	case Nil:
 		stackStr = ""
 	}
-	if len(stackStr) > 14 {
-		stackStr = stackStr[:11] + "..."
+	if len(stackStr) > 20 {
+		stackStr = stackStr[:17] + "..."
 	}
 	return stackStr
 }
