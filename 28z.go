@@ -87,6 +87,13 @@ type StackData struct {
 	flt float64
 }
 
+var progsMap = map[string]string {
+	"MOD": "|?>|`;|;|\"RD|s|\"RD|r|;|\"RC|s|\"RC|r|\"RD|r|\"RC|r|/|i|*|-|",
+	"PYTHAG": "|2|^|;|2|^|+|1|2|/|^|",
+	"IN2MM": "|25.4|*",
+	"SEQR": "|1|;|/|;|1|;|/|+|1|;|/|",
+}
+
 func DefaultStackData() StackData {
 	return StackData{Nil, "", 0}
 }
@@ -317,16 +324,23 @@ func (s *EnvState) Parse(input string) bool {
 		})
 	case 'r':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
-			var reg int
 			if (x.dataType == Str) {
-				reg = registerMap[strings.ToUpper(x.str)]
+				reg, ok := registerMap[strings.ToUpper(x.str)]
+				if ok {
+					return s.regs[reg], nil
+				}
+				prog, ok := progsMap[strings.ToUpper(x.str)]
+				if ok {
+					return StackData{Str, prog, 0.0}, nil
+				}
+
 			} else {
-				reg = int(x.flt)
+				reg := int(x.flt)
+				if reg < len(s.regs) {
+					return s.regs[reg], nil
+				}
 			}
-			if (reg < len(s.regs)) {
-				return s.regs[reg], nil
-			}
-			return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register: reg=%d", reg))
+			return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register or program: input=%d", x.str))
 		})
 	case 'p':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
