@@ -115,7 +115,7 @@ func (d StackData) ToString() string {
 	case Str:
 		stackStr = fmt.Sprintf("%s", d.str)
 	case Flt:
-		stackStr = fmt.Sprintf("%.10E", d.flt)
+		stackStr = fmt.Sprintf("%.13E", d.flt)
 	case Hex:
 		stackStr = fmt.Sprintf("%019x", d.flt)
 	case Oct:
