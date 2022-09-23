@@ -26,6 +26,8 @@ All data is input to the stack which may contain 4 entries.
 All basic operations work in RPN order.
 * Operations: {+,-,*,/,^}
 	* All of the above operators are bi-functions consuming 0 and 1 from the stack. The result is added back to the stack.
+* Integer: i
+    * Truncates the floating point value at 0 to an integer. 
 * Functions: {@sin,@cos,@tan,@log,@ln,@logb}
 	* All of the above are unary functions consuming 0 from the stack. # Build
 go build.
@@ -46,7 +48,7 @@ All registers may be used for general purpose data store, but some have fixed se
 	 * 0: The register name to store the value to
 	 * 1: The value to store
  * Recall: r
-	 * 0: The register name to recall a value from (copy, not move)
+	 * 0: The register name or program name to recall a value from (copy, not move)
 
 ## Control logic
 Control logic can be used to create more advanced programs.
@@ -57,5 +59,8 @@ Control logic can be used to create more advanced programs.
 	* Applies the specified conditional to 0 and 1 and stores 1 (valid) or 0 (invalid) in RC as a result.
 * Conditional prefix: `
 	* Any instructions prefixed with this character will only be executed if RC is 1
+* Break: break
+    * Breaks out of any loop or evaluation.
 
-
+## ROM
+Any programs under the rom directory will be loaded at init and made available to run. The extension is stripped, but any paths under rom/ are preserved.
