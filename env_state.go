@@ -5,6 +5,7 @@ import (
 	"strings"
 	"os"
 	"errors"
+	"math"
 )
 
 type UnaryFunc func(x StackData) (StackData, error)
@@ -14,8 +15,9 @@ type EnvState struct {
 	err string
 	overflow bool
 	stack []StackData
-	regs []StackData
+	regs [4]StackData
 	console string
+	graph [36][8]bool
 	writer TermWriter
 }
 
@@ -164,10 +166,45 @@ func (s *EnvState) Parse(input string) bool {
 			s.console += output + " "
 			return x, nil
 		})
+	case 'g':
+		if strings.Contains(input, "p") {
+			s.console = ""
+			for r:=0; r<8; r++ {
+				for c:=0; c<36; c++ {
+					if s.graph[c][r] {
+						s.console += "*"
+					} else {
+						s.console += "-"
+					}
+				}
+				s.console += "\n"
+			}
+		}
+		s.applyUnaryFunc(func(x StackData) (StackData, error){
+			if x.flt > 1.0 || x.flt < -1.0 {
+				return x, errors.New("Graph value must be between -1 and 1")
+			}
+			scaled := 3.0 * x.flt
+			scaled += 3
+			yPt := int(math.Round(scaled))
+			if yPt > 7 {
+				yPt = 7
+			} else if yPt < 0 {
+				yPt = 0
+			}
+			xPt := int(s.regs[registerMap["RB"]].flt)
+			if xPt < 36 {
+				s.graph[xPt][yPt] = true
+			}
+			return x, nil
+		})
 	case 'l':
 		for ; s.regs[1].flt>0; s.regs[1].flt -= 1.0 {
 			lines := strings.Split(s.regs[0].str, "|")
 			for i := range(lines) {
+				if s.err != "" {
+					return true
+				}
 				if len(lines[i]) == 0 {
 					continue
 				}
@@ -298,7 +335,7 @@ func (s *EnvState) Pop() StackData {
 }
 
 func NewEnvState(writer TermWriter) EnvState {
-	state := EnvState{ "", false, []StackData{}, make([]StackData, MaxStackLen), "", writer}
+	state := EnvState{ stack: make([]StackData, MaxStackLen), writer: writer}
 	for i := range(state.regs) {
 		state.regs[i] = DefaultStackData()
 	}
