@@ -23,14 +23,6 @@ type TermWriter struct {
 	interactive bool
 }
 
-func InteractiveTermWriter() TermWriter {
-	return TermWriter{0, io.Writer(os.Stdout), windowSize{0,0}, true}
-}
-
-func DebugTermWriter() TermWriter {
-	return TermWriter{0, io.Writer(os.Stdout), windowSize{0,0}, false}
-}
-
 func (w *TermWriter) Publish(content string) {
 	if w.interactive {
 		w.output.Write([]byte(strings.Repeat(clear, w.lastLineCount)))
