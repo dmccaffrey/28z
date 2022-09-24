@@ -5,41 +5,10 @@ import (
 	"strings"
 	"os"
 	"errors"
-	"math"
 )
 
 type UnaryFunc func(x StackData) (StackData, error)
 type BinaryFunc func(x StackData, y StackData) (StackData, error)
-
-var uFuncs = map[string]UnaryFunc {
-	"@sin": func (x StackData) (StackData, error) {
-		x.flt = math.Sin(x.flt)
-		return x, nil
-	},
-	"@cos": func (x StackData) (StackData, error) {
-		x.flt = math.Cos(x.flt)
-		return x, nil
-	},
-	"@tan": func (x StackData) (StackData, error) {
-		x.flt = math.Tan(x.flt)
-		return x, nil
-	},
-	"@log": func (x StackData) (StackData, error) {
-		x.flt = math.Log10(x.flt)
-		return x, nil
-	},
-	"@ln": func (x StackData) (StackData, error) {
-		x.flt = math.Log(x.flt)
-		return x, nil
-	},
-	"@logb": func (x StackData) (StackData, error) {
-		x.flt = math.Logb(x.flt)
-		return x, nil
-	},
-}
-
-var bFuncs = map[string]BinaryFunc {
-}
 
 type EnvState struct {
 	err string
@@ -184,6 +153,9 @@ func (s *EnvState) Parse(input string) bool {
 			return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register or program: input=%d", x.str))
 		})
 	case 'p':
+		if strings.Contains(input, "c") {
+			s.console = ""
+		}
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
 			s.console += x.ToString() + " "
 			return x, nil
