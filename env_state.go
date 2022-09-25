@@ -23,9 +23,12 @@ type EnvState struct {
 }
 
 func (s EnvState) Display(instruction string) {
-	content := fmt.Sprintf("Current Instruction=%s\n\n", instruction)
-	content += fmt.Sprintf("%s\t\t%*s\n", "Registers", 21, "Stack")
-	content += fmt.Sprintf("%s\t\t%s\n", strings.Repeat("-", 28), strings.Repeat("-", 28))
+	content := fmt.Sprintf("\n  ╓%s╖\n", strings.Repeat("─", 92))
+	content += fmt.Sprintf("  ║ \x1b[31m28z\033[0m ┇ Current Instruction = %-*s ║\n", 62, instruction)
+	content += fmt.Sprintf("  ╟%s╥%s╢\n", strings.Repeat("─", 46), strings.Repeat("─", 45))
+	//content += fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 94))
+	content += fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, "Registers", 44, "Stack")
+	content += fmt.Sprintf("  ╟%s╫%s╢\n", strings.Repeat("┄", 46), strings.Repeat("┄", 45))
 	end := MaxStackLen-1
 	for i := end; i >= 0; i-- {
 		stackEntry := DefaultStackData()
@@ -33,16 +36,27 @@ func (s EnvState) Display(instruction string) {
 			stackIndex := len(s.stack) - i - 1
 			stackEntry = s.stack[stackIndex]
 		}
-		content += fmt.Sprintf("R%s: %*s (%c)\t\t%d: %*s (%c)\n", string(i + 65), 20, s.regs[i].ToString(), s.regs[i].dataType, i, 20, stackEntry.ToString(), stackEntry.dataType)
+		registerStr := fmt.Sprintf("R%s: %*s (%c)", string(i + 65), 20, s.regs[i].ToString(), s.regs[i].dataType)
+		stackStr := fmt.Sprintf("%d:", i)
+		if stackEntry.dataType != Nil {
+			stackStr = fmt.Sprintf("%d: %*s (%c)", i, 20, stackEntry.ToString(), stackEntry.dataType)
+		}
+		content += fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, registerStr, 44, stackStr)
 	}
-	if len(s.err) != 0 {
-		content += fmt.Sprintf("\n<Err: %s>", s.err)
+	content += fmt.Sprintf("  ╟%s╨%s╢\n", strings.Repeat("─", 46), strings.Repeat("─", 45))
+	if s.err != "" {
+		content += fmt.Sprintf("  ║ 🯀 %-*s║\n", 89, s.err)
+
+	} else {
+		content += fmt.Sprintf("  ║ 🮱 %-*s║\n", 89, "OK")
 	}
+	content += fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 92))
 	lines := strings.Split(s.console, "\n")
 	for _,v := range lines {
-		content += fmt.Sprintf("\n| %s", v)
+		content += fmt.Sprintf("  ║%-*s║\n", 92, v)
 	}
-	content += "\n\n: "
+	content += fmt.Sprintf("  ╟%s╜\n", strings.Repeat("─", 92))
+	content += "  ║\n  ╙─🮥 <instruction> 🮴: "
 	s.writer.Publish(content)
 }
 
@@ -344,7 +358,7 @@ func (s *EnvState) Pop() StackData {
 }
 
 func NewEnvState(writer TermWriter) EnvState {
-	state := EnvState{ stack: make([]StackData, MaxStackLen), writer: writer}
+	state := EnvState{ writer: writer}
 	for i := range(state.regs) {
 		state.regs[i] = DefaultStackData()
 	}

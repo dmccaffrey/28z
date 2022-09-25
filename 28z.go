@@ -36,6 +36,7 @@ func (w *TermWriter) Publish(content string) {
 
 func main() {
 	enableDebug := flag.Bool("debug", false, "Enable debug output")
+	//enableRegs := flag.Bool("regs", false, "Enable debug output")
 	flag.Parse()
 
 	loadRom()
