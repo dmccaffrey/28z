@@ -59,4 +59,5 @@ func main() {
 		state.Display(input)
 	}
 	state.Display("exit")
+	fmt.Println("\n")
 }
