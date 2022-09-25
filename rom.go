@@ -19,6 +19,8 @@ const(
 
 const(
 	MaxStackLen = 4
+	graphW = 92
+	graphH = 32
 )
 
 var registerMap = map[string]int {
@@ -39,35 +41,36 @@ var constsMap = map[string]float64 {
 	"$phi": math.Phi,
 	//"$maxf": math.MaxFloat64, ????
 	"$maxf": math.MaxInt64,
+	"$graphW": graphW,
 }
 
 var progsMap = map[string]string {}
 
 var uFuncs = map[string]UnaryFunc {
 	"@sin": func (x StackData) (StackData, error) {
-		x.flt = math.Sin(x.flt)
+		x.flt = math.Sin(x.flt * math.Pi / 180)
 		return x, nil
 	},
-		"@cos": func (x StackData) (StackData, error) {
-			x.flt = math.Cos(x.flt)
-			return x, nil
-		},
-		"@tan": func (x StackData) (StackData, error) {
-			x.flt = math.Tan(x.flt)
-			return x, nil
-		},
-		"@log": func (x StackData) (StackData, error) {
-			x.flt = math.Log10(x.flt)
-			return x, nil
-		},
-		"@ln": func (x StackData) (StackData, error) {
-			x.flt = math.Log(x.flt)
-			return x, nil
-		},
-		"@logb": func (x StackData) (StackData, error) {
-			x.flt = math.Logb(x.flt)
-			return x, nil
-		},
+	"@cos": func (x StackData) (StackData, error) {
+		x.flt = math.Cos(x.flt * math.Pi / 180)
+		return x, nil
+	},
+	"@tan": func (x StackData) (StackData, error) {
+		x.flt = math.Tan(x.flt * math.Pi / 180)
+		return x, nil
+	},
+	"@log": func (x StackData) (StackData, error) {
+		x.flt = math.Log10(x.flt)
+		return x, nil
+	},
+	"@ln": func (x StackData) (StackData, error) {
+		x.flt = math.Log(x.flt)
+		return x, nil
+	},
+	"@logb": func (x StackData) (StackData, error) {
+		x.flt = math.Logb(x.flt)
+		return x, nil
+	},
 }
 
 var bFuncs = map[string]BinaryFunc {
