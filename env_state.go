@@ -6,6 +6,7 @@ import (
 	"os"
 	"errors"
 	"math"
+	"time"
 )
 
 type UnaryFunc func(x StackData) (StackData, error)
@@ -180,6 +181,9 @@ func (s *EnvState) Parse(input string) bool {
 				s.console += "\n"
 			}
 		}
+		if strings.Contains(input, "c") {
+			s.graph = [graphW][graphH]bool{}
+		}
 		s.applyUnaryFunc(func(x StackData) (StackData, error){
 			if x.flt > 1.0 || x.flt < -1.0 {
 				return x, errors.New("Graph value must be between -1 and 1")
@@ -261,6 +265,11 @@ func (s *EnvState) Parse(input string) bool {
 			s.Push(t)
 			s.Push(z)
 		}
+	case '~':
+		s.applyUnaryFunc(func(x StackData) (StackData, error){
+			time.Sleep(time.Duration(x.flt) * time.Millisecond)
+			return DefaultStackData(), nil
+		})
 	default:
 		data := StackData{}
 		err := data.Parse(input)
