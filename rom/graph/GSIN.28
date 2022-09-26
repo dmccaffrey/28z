@@ -5,3 +5,11 @@ s
 "ra
 s
 l
+
+$graphW
+"rb
+s
+"|"rb|r|$graphW|/|720|*|@cos|gp|d|
+"ra
+s
+l
