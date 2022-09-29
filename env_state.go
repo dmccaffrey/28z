@@ -71,6 +71,7 @@ func (s *EnvState) Parse(input string) bool {
 		return true
 	}
 	s.err = ""
+	defer s.Display(input)
 	if input == "exit" {
 		os.Exit(0)
 	}
@@ -139,15 +140,7 @@ func (s *EnvState) Parse(input string) bool {
 		})
 	case 'e':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
-			var lines []string
-			if strings.Contains(x.str, "_") {
-				lines = strings.Split(x.str, "_")
-			} else {
-				lines = strings.Split(x.str, "|")
-			}
-			for i := range(lines) {
-				s.Parse(lines[i])
-			}
+			x.Eval(s.Parse)
 			return DefaultStackData(), nil
 		})
 	case 's':
@@ -206,7 +199,7 @@ func (s *EnvState) Parse(input string) bool {
 				s.console += "\n"
 			}
 		}
-		if strings.Contains(input, "c") {
+		if strings.Contains(string(input), "c") {
 			s.graph = [graphW][graphH]bool{}
 		}
 		s.applyUnaryFunc(func(x StackData) (StackData, error){
@@ -228,22 +221,7 @@ func (s *EnvState) Parse(input string) bool {
 			return x, nil
 		})
 	case 'l':
-		for ; s.regs[1].flt>0; s.regs[1].flt -= 1.0 {
-			lines := strings.Split(s.regs[0].str, "|")
-			for i := range(lines) {
-				if s.err != "" {
-					return true
-				}
-				if len(lines[i]) == 0 {
-					continue
-				}
-				res := s.Parse(lines[i])
-				s.Display(lines[i])
-				if !res {
-					return true
-				}
-			}
-		}
+		s.regs[1].Loop(s.regs[0], s.Parse)
 	case '?':
 		if len(input) < 2 {
 			s.err = "Invalid comparison"

@@ -18,7 +18,7 @@ i
 -
 "RB
 s
-"$maxf|"RB|r|-|"RD|r|*|?>|d|`break|
+"$maxf "RB r - "RD r * ?> d `break
 "RA
 s
 l
