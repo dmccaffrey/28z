@@ -1,7 +1,7 @@
 $graphW
 'rb
 s
-'2.0 @rand 1 - gp 25 ~ d $graphW 1 - @rand 1 + 'rb s 
+'2.0 @rand 1 - g pg 25 ~ d $graphW 1 - @rand 1 + 'rb s 
 'ra
 s
 l

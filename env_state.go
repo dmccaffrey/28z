@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"os"
-	"errors"
 	"time"
 )
 
@@ -106,31 +105,39 @@ func (s *EnvState) Parse(input string) bool {
 			return s.Parse(input[1:])
 		}
 	case '@':
-		if len(input) < 3 {
-			s.err = "Invalid function"
-			return true
+		ufun, ok := uFuncs[input]
+		if ok {
+			s.applyUnaryFunc(ufun)
+			break
 		}
-		if input[1] != 2 {
-			fun, ok := uFuncs[input]
-			if ok {
-				s.applyUnaryFunc(fun)
-			} else {
-				s.err = "Unknown function"
-			}
-		} else if input[1] == '2' {
-			fun, ok := bFuncs[input]
-			if ok {
-				s.applyBinaryFunc(fun)
-			} else {
-				s.err = "Unknown function"
-			}
+		bfun, ok := bFuncs[input]
+		if ok {
+			s.applyBinaryFunc(bfun)
+			break
 		}
+		s.err = "Unknown function"
 	case '$':
 		if len(input) < 2 {
 			s.err = "Invalid constant"
 			return true
 		}
 		s.Push(StackData{Flt, "", constsMap[input]})
+	case 'c':
+		if strings.Contains(input, "g") {
+			s.graph = [graphW][graphH]bool{}
+		}
+		if strings.Contains(input, "c") {
+			s.console = ""
+		}
+		if strings.Contains(input, "r") {
+			s.regs[RA] = DefaultStackData()
+			s.regs[RB] = DefaultStackData()
+			s.regs[RC] = DefaultStackData()
+			s.regs[RD] = DefaultStackData()
+		}
+		if strings.Contains(input, "s") {
+			s.stack = []StackData{}
+		}
 	case 'd':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
 			return DefaultStackData(), nil
@@ -151,27 +158,12 @@ func (s *EnvState) Parse(input string) bool {
 		})
 	case 'r':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
-			if (x.dataType == Str) {
-				reg, ok := registerMap[strings.ToUpper(x.str)]
-				if ok {
-					return s.regs[reg], nil
-				}
-				prog, ok := progsMap[strings.ToUpper(x.str)]
-				if ok {
-					return StackData{Str, prog, 0.0}, nil
-				}
-
-			} else {
-				reg := int(x.flt)
-				if reg < len(s.regs) {
-					return s.regs[reg], nil
-				}
-			}
-			return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register or program: input=%d", x.str))
+			return Recall(x, &s.regs)
 		})
 	case 'p':
-		if strings.Contains(input, "c") {
-			s.console = ""
+		if strings.Contains(input, "g") {
+			RenderGraph(&s.console, s.graph)
+			break
 		}
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
 			output := strings.Replace(x.ToString(), `\n`, "\n", -1)
@@ -179,22 +171,6 @@ func (s *EnvState) Parse(input string) bool {
 			return x, nil
 		})
 	case 'g':
-		if strings.Contains(input, "p") {
-			s.console = ""
-			for r:=0; r<graphH; r++ {
-				for c:=0; c<graphW; c++ {
-					if s.graph[c][r] {
-						s.console += "█"
-					} else {
-						s.console += "░"
-					}
-				}
-				s.console += "\n"
-			}
-		}
-		if strings.Contains(string(input), "c") {
-			s.graph = [graphW][graphH]bool{}
-		}
 		s.applyUnaryFunc(func(x StackData) (StackData, error){
 			return GraphPoint(x, s.regs[RB], &s.graph)
 		})

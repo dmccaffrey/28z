@@ -56,6 +56,20 @@ func GraphPoint(x StackData, rb StackData, graph *Graph) (StackData, error) {
 	return x, nil
 }
 
+func RenderGraph(console *string, graph Graph) {
+	*console = ""
+	for r:=0; r<graphH; r++ {
+		for c:=0; c<graphW; c++ {
+			if graph[c][r] {
+				*console += "█"
+			} else {
+				*console += "░"
+			}
+		}
+		*console += "\n"
+	}
+}
+
 func Store(x StackData, y StackData, regs *Registers) (StackData, error) {
 	if (x.dataType == Str) {
 		reg, ok := registerMap[strings.ToUpper(x.str)]
@@ -67,4 +81,24 @@ func Store(x StackData, y StackData, regs *Registers) (StackData, error) {
 		}
 	}
 	return DefaultStackData(), nil
+}
+
+func Recall(x StackData, regs *Registers) (StackData, error) {
+	if (x.dataType == Str) {
+		reg, ok := registerMap[strings.ToUpper(x.str)]
+		if ok {
+			return regs[reg], nil
+		}
+		prog, ok := progsMap[strings.ToUpper(x.str)]
+		if ok {
+			return StackData{Str, prog, 0.0}, nil
+		}
+
+	} else {
+		reg := int(x.flt)
+		if reg < len(regs) {
+			return regs[reg], nil
+		}
+	}
+	return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register or program: input=%d", x.str))
 }
