@@ -24,6 +24,13 @@ const(
 	graphH = 32
 )
 
+const(
+	RA int = 0
+	RB     = 1
+	RC     = 2
+	RD     = 3
+)
+
 var registerMap = map[string]int {
 	"A": 0,
 		"RA": 0,
