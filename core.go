@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"strings"
-	"math"
 	"fmt"
 )
 
@@ -37,6 +36,7 @@ func (d *StackData) Loop(f StackData, p Parser) error {
 	return nil
 }
 
+/*
 func GraphPoint(x StackData, rb StackData, graph *Graph) (StackData, error) {
 	if x.flt > 1.0 || x.flt < -1.0 {
 		return x, errors.New("Graph value must be between -1 and 1")
@@ -55,12 +55,14 @@ func GraphPoint(x StackData, rb StackData, graph *Graph) (StackData, error) {
 	}
 	return x, nil
 }
+*/
 
-func RenderGraph(console *string, graph Graph) {
+func RenderGraph(console *string, ram Ram) {
 	*console = ""
 	for r:=0; r<graphH; r++ {
 		for c:=0; c<graphW; c++ {
-			if graph[c][r] {
+			index := r * graphW + c
+			if ram[index] != 0 {
 				*console += "█"
 			} else {
 				*console += "░"
@@ -70,21 +72,24 @@ func RenderGraph(console *string, graph Graph) {
 	}
 }
 
-func Store(x StackData, y StackData, regs *Registers) (StackData, error) {
-	if (x.dataType == Str) {
+func Store(x StackData, y StackData, regs *Registers, ram *Ram) (StackData, error) {
+	if x.dataType == Str {
 		reg, ok := registerMap[strings.ToUpper(x.str)]
-		if ok {
-			regs[reg] = y
-
-		} else {
+		if !ok {
 			return y, errors.New(fmt.Sprintf("Invalid register: reg=%d", reg))
+		}
+		regs[reg] = y
+
+	} else {
+		if x.flt >= 0 && x.flt < ramSize {
+			ram[int(x.flt)] = byte(y.flt)
 		}
 	}
 	return DefaultStackData(), nil
 }
 
-func Recall(x StackData, regs *Registers) (StackData, error) {
-	if (x.dataType == Str) {
+func Recall(x StackData, regs *Registers, ram *Ram) (StackData, error) {
+	if x.dataType == Str {
 		reg, ok := registerMap[strings.ToUpper(x.str)]
 		if ok {
 			return regs[reg], nil
@@ -95,9 +100,8 @@ func Recall(x StackData, regs *Registers) (StackData, error) {
 		}
 
 	} else {
-		reg := int(x.flt)
-		if reg < len(regs) {
-			return regs[reg], nil
+		if x.flt >= 0 && x.flt < ramSize {
+			return StackData{Flt, "", float64(ram[int(x.flt)])}, nil
 		}
 	}
 	return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register or program: input=%d", x.str))

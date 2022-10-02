@@ -7,7 +7,11 @@ import (
 	"time"
 )
 
-type Graph [graphW][graphH]bool
+const(
+	ramSize = 4096
+)
+
+type Ram [ramSize]byte
 type Registers [4]StackData
 
 type UnaryFunc func(x StackData) (StackData, error)
@@ -19,7 +23,7 @@ type EnvState struct {
 	stack []StackData
 	regs Registers
 	console string
-	graph Graph
+	ram Ram
 	writer TermWriter
 }
 
@@ -100,6 +104,14 @@ func (s *EnvState) Parse(input string) bool {
 		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
 			return y.Pow(x)
 		})
+	case '|':
+		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
+			return y.Or(x)
+		})
+	case '&':
+		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
+			return y.And(x)
+		})
 	case '`':
 		if s.regs[registerMap["RC"]].dataType == Flt && s.regs[registerMap["RC"]].flt == 1 {
 			return s.Parse(input[1:])
@@ -123,8 +135,8 @@ func (s *EnvState) Parse(input string) bool {
 		}
 		s.Push(StackData{Flt, "", constsMap[input]})
 	case 'c':
-		if strings.Contains(input, "g") {
-			s.graph = [graphW][graphH]bool{}
+		if strings.Contains(input, "m") {
+			s.ram = Ram{}
 		}
 		if strings.Contains(input, "c") {
 			s.console = ""
@@ -154,26 +166,20 @@ func (s *EnvState) Parse(input string) bool {
 		})
 	case 's':
 		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
-			return Store(x, y, &s.regs)
+			return Store(x, y, &s.regs, &s.ram)
 		})
 	case 'r':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
-			return Recall(x, &s.regs)
+			return Recall(x, &s.regs, &s.ram)
 		})
 	case 'p':
-		if strings.Contains(input, "g") {
-			RenderGraph(&s.console, s.graph)
-			break
-		}
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
 			output := strings.Replace(x.ToString(), `\n`, "\n", -1)
 			s.console += output + " "
 			return x, nil
 		})
 	case 'g':
-		s.applyUnaryFunc(func(x StackData) (StackData, error){
-			return GraphPoint(x, s.regs[RB], &s.graph)
-		})
+		RenderGraph(&s.console, s.ram)
 	case 'l':
 		s.regs[1].Loop(s.regs[0], s.Parse)
 	case '?':
