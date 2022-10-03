@@ -4,6 +4,10 @@ ca
 $graphW
 "rb
 s
+'Enter a function
+q
+'rd
+s
 ' 'rb r $graphW / 720 * 'rd r e $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - s 50 ~ g
 "ra
 s

@@ -142,6 +142,14 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 	case 'q':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
 			s.prompt = x.str
+			Display(*s, input, true)
+			response, err := getInput()
+			for err != nil {
+				s.err = err.Error()
+				Display(*s, response, true)
+				response, err = getInput()
+			}
+			s.Parse(response, true)
 			return DefaultStackData(), nil
 		})
 	case '?':

@@ -5,7 +5,11 @@ import (
 	"strings"
 	"fmt"
 	"math"
+	"bufio"
+	"os"
 )
+
+var reader *bufio.Reader = bufio.NewReader(os.Stdin)
 
 type Instruction string
 
@@ -105,4 +109,10 @@ func Recall(x StackData, regs *Registers, ram *Ram) (StackData, error) {
 		}
 	}
 	return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register or program: input=%d", x.str))
+}
+
+func getInput() (string, error) {
+	input, err := reader.ReadString('\n')
+	input = strings.TrimSuffix(input, "\n")
+	return input, err
 }
