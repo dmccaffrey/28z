@@ -1,7 +1,10 @@
+'rd
+s
+ca
 $graphW
 "rb
 s
-" "rb r $graphW / "RC r * "RD r e g pg d 
+' 'rb r $graphW / 720 * 'rd r e $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - s 50 ~ g
 "ra
 s
 l

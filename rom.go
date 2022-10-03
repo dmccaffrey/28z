@@ -85,6 +85,10 @@ var uFuncs = map[string]UnaryFunc {
 		x.flt = rand.Float64() * x.flt
 		return x, nil
 	},
+	"@round": func (x StackData) (StackData, error) {
+		x.flt = math.Round(x.flt)
+		return x, nil
+	},
 }
 
 var bFuncs = map[string]BinaryFunc {
