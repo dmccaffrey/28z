@@ -42,7 +42,7 @@ func main() {
 	loadRom()
 	writer := TermWriter{0, io.Writer(os.Stdout), windowSize{0,0}, !*enableDebug}
 	state := NewEnvState(writer)
-	state.Display("")
+	Display(state, "", true)
 	in := bufio.NewReader(os.Stdin)
 	for {
 		input, err := in.ReadString('\n')
@@ -53,11 +53,11 @@ func main() {
 		if input == "exit" {
 			break
 		}
-		if !state.Parse(input) {
+		if !state.Parse(input, true) {
 			break
 		}
-		state.Display(input)
+		Display(state, input, true)
 	}
-	state.Display("exit")
+	Display(state, "exit", true)
 	fmt.Println("\n")
 }
