@@ -11,6 +11,15 @@ const(
 	ramSize = 4096
 )
 
+var uiS0 = fmt.Sprintf("\n  ╓%s╖\n", strings.Repeat("─", 92))
+var uiS1 = fmt.Sprintf("  ╟%s╥%s╢\n", strings.Repeat("─", 46), strings.Repeat("─", 45))
+var headers = fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, "Registers", 44, "Stack")
+var uiS2 = fmt.Sprintf("  ╟%s╫%s╢\n", strings.Repeat("┄", 46), strings.Repeat("┄", 45))
+var uiS3 = fmt.Sprintf("  ╟%s╨%s╢\n", strings.Repeat("─", 46), strings.Repeat("─", 45))
+var uiS4 = fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 92))
+var uiIn = fmt.Sprintf("  ║  %*s🮴 ║\n", 88, "")
+var uiS5 = fmt.Sprintf("  ╙─%s╜\n", strings.Repeat("─", 91))
+
 type Ram [ramSize]byte
 type Registers [4]StackData
 
@@ -28,12 +37,12 @@ type EnvState struct {
 }
 
 func (s EnvState) Display(instruction string) {
-	content := fmt.Sprintf("\n  ╓%s╖\n", strings.Repeat("─", 92))
-	content += fmt.Sprintf("  ║ \x1b[31m28z\033[0m ┇ Current Instruction = %-*s ║\n", 62, instruction)
-	content += fmt.Sprintf("  ╟%s╥%s╢\n", strings.Repeat("─", 46), strings.Repeat("─", 45))
-	//content += fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 94))
-	content += fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, "Registers", 44, "Stack")
-	content += fmt.Sprintf("  ╟%s╫%s╢\n", strings.Repeat("┄", 46), strings.Repeat("┄", 45))
+	var sb strings.Builder
+	sb.WriteString(uiS0)
+	sb.WriteString(fmt.Sprintf("  ║ \x1b[31m28z\033[0m ┇ Current Instruction = %-*s ║\n", 62, instruction))
+	sb.WriteString(uiS1)
+	sb.WriteString(headers)
+	sb.WriteString(uiS2)
 	end := MaxStackLen-1
 	for i := end; i >= 0; i-- {
 		stackEntry := DefaultStackData()
@@ -46,29 +55,29 @@ func (s EnvState) Display(instruction string) {
 		if stackEntry.dataType != Nil {
 			stackStr = fmt.Sprintf("%d: (%c) %-*s", i, stackEntry.dataType, 35, stackEntry.ToString())
 		}
-		content += fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, registerStr, 44, stackStr)
+		sb.WriteString(fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, registerStr, 44, stackStr))
 	}
-	content += fmt.Sprintf("  ╟%s╨%s╢\n", strings.Repeat("─", 46), strings.Repeat("─", 45))
+	sb.WriteString(uiS3)
 	if s.err != "" {
-		content += fmt.Sprintf("  ║ Status: 🯀 %-*s║\n", 81, s.err)
+		sb.WriteString(fmt.Sprintf("  ║ Status: 🯀 %-*s║\n", 81, s.err))
 
 	} else {
-		content += fmt.Sprintf("  ║ Status: 🮱 %-*s║\n", 81, "OK")
+		sb.WriteString(fmt.Sprintf("  ║ Status: 🮱 %-*s║\n", 81, "OK"))
 	}
-	content += fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 92))
+	sb.WriteString(uiS4)
 	lines := strings.Split(s.console, "\n")
 	for _,v := range lines {
-		content += fmt.Sprintf("  ║%-*s║\n", 92, v)
+		sb.WriteString(fmt.Sprintf("  ║%-*s║\n", 92, v))
 	}
 	for i := 36-len(lines); i>0; i-- {
-		content += fmt.Sprintf("  ║%-*s║\n", 92, "")
+		sb.WriteString(fmt.Sprintf("  ║%-*s║\n", 92, ""))
 
 	}
-	content += fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 92))
-	content += fmt.Sprintf("  ║  %*s🮴 ║\n", 88, "")
-	content += fmt.Sprintf("  ╙─%s╜\n", strings.Repeat("─", 91))
-	content += "    \033[2A> "
-	s.writer.Publish(content)
+	sb.WriteString(uiS4)
+	sb.WriteString(uiIn)
+	sb.WriteString(uiS5)
+	sb.WriteString("    \033[2A> ")
+	s.writer.Publish(sb.String())
 }
 
 func (s *EnvState) Parse(input string) bool {
