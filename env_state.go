@@ -23,6 +23,7 @@ type EnvState struct {
 	regs Registers
 	console string
 	ram Ram
+	prompt string
 	writer TermWriter
 }
 
@@ -31,6 +32,7 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 		return true
 	}
 	s.err = ""
+	s.prompt = ""
 	defer Display(*s, input, userInput)
 	if input == "exit" {
 		os.Exit(0)
@@ -137,6 +139,11 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 		RenderGraph(&s.console, s.ram)
 	case 'l':
 		s.regs[1].Loop(s.regs[0], s.Parse)
+	case 'q':
+		s.applyUnaryFunc(func(x StackData) (StackData, error) {
+			s.prompt = x.str
+			return DefaultStackData(), nil
+		})
 	case '?':
 		if len(input) < 2 {
 			s.err = "Invalid comparison"
