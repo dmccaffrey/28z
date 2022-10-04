@@ -149,6 +149,9 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 				Display(*s, response, true)
 				response, err = getInput()
 			}
+			if response == "debug" {
+				debugLoop(s)
+			}
 			s.Parse(response, true)
 			return DefaultStackData(), nil
 		})
@@ -166,8 +169,14 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 		res := 0.0
 		switch(input[1]) {
 		case '=':
-			if x.flt == y.flt {
-				res = 1.0
+			if x.dataType == Str {
+				if x.str == y.str {
+					res = 1.0
+				}
+			} else if x.dataType != Nil {
+				if x.flt == y.flt {
+					res = 1.0
+				}
 			}
 		case '<':
 			if x.flt < y.flt {
