@@ -8,6 +8,8 @@ import (
 
 const(
 	ramSize = 4096
+	checkTrueBit = 1
+	stepBit = 2
 )
 
 type Ram [ramSize]byte
@@ -33,12 +35,19 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 	}
 	s.err = ""
 	s.prompt = ""
+	if int(s.regs[RC].flt)  & stepBit != 0 {
+		defer getInput()
+	}
 	defer Display(*s, input, userInput)
 	if input == "exit" {
 		os.Exit(0)
 	}
 	if input == "break" {
 		return false
+	}
+	if input == "reload"{
+		loadRom()
+		return true
 	}
 	switch input[0] {
 	case '+':
@@ -70,7 +79,7 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 			return y.And(x)
 		})
 	case '`':
-		if s.regs[registerMap["RC"]].dataType == Flt && s.regs[registerMap["RC"]].flt == 1 {
+		if int(s.regs[RC].flt) & 1 != 0 {
 			return s.Parse(input[1:], userInput)
 		}
 	case '@':
@@ -166,29 +175,29 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 		}
 		x := s.stack[len(s.stack)-1]
 		y := s.stack[len(s.stack)-2]
-		res := 0.0
+		res := 0
 		switch(input[1]) {
 		case '=':
 			if x.dataType == Str {
 				if x.str == y.str {
-					res = 1.0
+					res = 1
 				}
 			} else if x.dataType != Nil {
 				if x.flt == y.flt {
-					res = 1.0
+					res = 1
 				}
 			}
 		case '<':
 			if x.flt < y.flt {
-				res = 1.0
+				res = 1
 			}
 		case '>':
 			if x.flt > y.flt {
-				res = 1.0
+				res = 1
 			}
 		}
-		s.regs[registerMap["RC"]].dataType = Flt
-		s.regs[registerMap["RC"]].flt = res
+		s.regs[RC].dataType = Flt
+		s.regs[RC].flt = float64(int(s.regs[RC].flt) ^ (int(s.regs[RC].flt) ^ -res))
 	case ';':
 		if len(s.stack) >= 2 {
 			x := s.Pop()
@@ -207,11 +216,19 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 			s.Push(t)
 			s.Push(z)
 		}
+	case '.':
+		if len(s.stack) >= 1 {
+			x := s.Pop()
+			s.Push(x)
+			s.Push(x)
+		}
 	case '~':
 		s.applyUnaryFunc(func(x StackData) (StackData, error){
 			time.Sleep(time.Duration(x.flt) * time.Millisecond)
 			return DefaultStackData(), nil
 		})
+	case '\\':
+		return true
 	default:
 		data := StackData{}
 		err := data.Parse(input)
