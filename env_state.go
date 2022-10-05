@@ -131,7 +131,7 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 		})
 	case 'p':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
-			output := strings.Replace(x.ToString(), `\n`, "\n", -1)
+			output := strings.Replace(x.ToString(false), `\n`, "\n", -1)
 			s.console += output + " "
 			return x, nil
 		})

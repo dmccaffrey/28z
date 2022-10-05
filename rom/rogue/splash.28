@@ -1,0 +1,26 @@
+'\\\\\ ROGUE\n
+'A game for the 28z\n\n
++
+'UI:\n
++
+'- RD: Life remaining\n
++
+'- RC: Internal use\n
++
+'- RB: Turns remaining\n
++
+'- RA: Internal use\n
++
+'Controls:\n
++
+'- Movement: east='e, west='w, south='s\n
++
+'- Inventory: list='l, use=0-10
++
+'- Combat: attack=<movement command>
++
+p
+d
+'Ready?
+q
+d

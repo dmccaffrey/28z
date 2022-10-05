@@ -115,6 +115,7 @@ func loadFile(path string, info os.FileInfo, err error) error {
 	name = strings.Replace(name, ".28", "", -1)
 	name = strings.ToUpper(name)
 	prog := strings.Replace(string(data), "\n", "_", -1)
+	prog = strings.Replace(prog, "$nl", "\n", -1)
 	fmt.Printf("Loaded: name=%s, prog=%s", name, prog)
 	progsMap[name] = prog
 	return nil
