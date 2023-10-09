@@ -17,7 +17,7 @@ type EnvState struct {
 	stack []StackData
 	regs [4]StackData
 	console string
-	graph [36][8]bool
+	graph [graphW][graphH]bool
 	writer TermWriter
 }
 
@@ -169,12 +169,12 @@ func (s *EnvState) Parse(input string) bool {
 	case 'g':
 		if strings.Contains(input, "p") {
 			s.console = ""
-			for r:=0; r<8; r++ {
-				for c:=0; c<36; c++ {
+			for r:=0; r<graphH; r++ {
+				for c:=0; c<graphW; c++ {
 					if s.graph[c][r] {
-						s.console += "*"
+						s.console += "█"
 					} else {
-						s.console += "-"
+						s.console += "░"
 					}
 				}
 				s.console += "\n"
@@ -184,16 +184,16 @@ func (s *EnvState) Parse(input string) bool {
 			if x.flt > 1.0 || x.flt < -1.0 {
 				return x, errors.New("Graph value must be between -1 and 1")
 			}
-			scaled := 3.0 * x.flt
-			scaled += 3
+			scaled := (graphH / 2) * x.flt
+			scaled += graphH / 2
 			yPt := int(math.Round(scaled))
-			if yPt > 7 {
-				yPt = 7
+			if yPt > graphH-1 {
+				yPt = graphH-1
 			} else if yPt < 0 {
 				yPt = 0
 			}
 			xPt := int(s.regs[registerMap["RB"]].flt)
-			if xPt < 36 {
+			if xPt < graphW {
 				s.graph[xPt][yPt] = true
 			}
 			return x, nil
