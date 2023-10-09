@@ -5,9 +5,11 @@ import (
 	"strings"
 	"os"
 	"errors"
-	"math"
 	"time"
 )
+
+type Graph [graphW][graphH]bool
+type Registers [4]StackData
 
 type UnaryFunc func(x StackData) (StackData, error)
 type BinaryFunc func(x StackData, y StackData) (StackData, error)
@@ -16,9 +18,9 @@ type EnvState struct {
 	err string
 	overflow bool
 	stack []StackData
-	regs [4]StackData
+	regs Registers
 	console string
-	graph [graphW][graphH]bool
+	graph Graph
 	writer TermWriter
 }
 
@@ -145,16 +147,7 @@ func (s *EnvState) Parse(input string) bool {
 		})
 	case 's':
 		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
-			if (x.dataType == Str) {
-				reg, ok := registerMap[strings.ToUpper(x.str)]
-				if ok {
-					s.regs[reg] = y
-
-				} else {
-					return y, errors.New(fmt.Sprintf("Invalid register: reg=%d", reg))
-				}
-			}
-			return DefaultStackData(), nil
+			return Store(x, y, &s.regs)
 		})
 	case 'r':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
@@ -203,22 +196,7 @@ func (s *EnvState) Parse(input string) bool {
 			s.graph = [graphW][graphH]bool{}
 		}
 		s.applyUnaryFunc(func(x StackData) (StackData, error){
-			if x.flt > 1.0 || x.flt < -1.0 {
-				return x, errors.New("Graph value must be between -1 and 1")
-			}
-			scaled := (graphH / 2) * x.flt
-			scaled += graphH / 2
-			yPt := int(math.Round(scaled))
-			if yPt > graphH-1 {
-				yPt = graphH-1
-			} else if yPt < 0 {
-				yPt = 0
-			}
-			xPt := int(s.regs[registerMap["RB"]].flt)
-			if xPt < graphW {
-				s.graph[xPt][yPt] = true
-			}
-			return x, nil
+			return GraphPoint(x, s.regs[RB], &s.graph)
 		})
 	case 'l':
 		s.regs[1].Loop(s.regs[0], s.Parse)
