@@ -9,13 +9,15 @@ import (
 )
 
 var uiS0 = fmt.Sprintf("\n  ╓%s╖\n", strings.Repeat("─", 92))
-var uiS1 = fmt.Sprintf("  ╟%s╥%s╢\n", strings.Repeat("─", 46), strings.Repeat("─", 45))
-var headers = fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, "Registers", 44, "Stack")
-var uiS2 = fmt.Sprintf("  ╟%s╫%s╢\n", strings.Repeat("┄", 46), strings.Repeat("┄", 45))
-var uiS3 = fmt.Sprintf("  ╟%s╨%s╢\n", strings.Repeat("─", 46), strings.Repeat("─", 45))
+var uiS1 = fmt.Sprintf("  ╟%s╥%s╢\n", strings.Repeat("─", 26), strings.Repeat("─", 65))
+var headers = fmt.Sprintf("  ║ %-*s║ %-*s║\n", 25, "Registers", 64, "Stack")
+var uiS2 = fmt.Sprintf("  ╟%s╫%s╢\n", strings.Repeat("┄", 26), strings.Repeat("┄", 65))
+var uiS3 = fmt.Sprintf("  ╟%s╨%s╢\n", strings.Repeat("─", 26), strings.Repeat("─", 65))
 var uiS4 = fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 92))
 var uiIn = fmt.Sprintf("  ║  %*s🮴 ║\n", 88, "")
 var uiS5 = fmt.Sprintf("  ╙─%s╜\n", strings.Repeat("─", 91))
+
+var stackAliases = []string{"(x)", "(y)", "(z)", "   ", "   "}
 
 var lastUiUpdate = time.Now().Local()
 
@@ -30,13 +32,13 @@ func Display(vm *core.Core) string {
 	registerMap := vm.GetRegisterMap()
 	for i := 4; i >= 0; i-- {
 		regKey := core.RegisterKeys[i]
-		registerStr := fmt.Sprintf("R%s: %023d", regKey, registerMap[regKey])
+		registerStr := fmt.Sprintf("R%s: %04d", regKey, registerMap[regKey])
 		stackValue := ""
 		if i < len(stack) {
 			stackValue = stack[i].GetString()
 		}
-		stackStr := fmt.Sprintf("%02d: %-*s", i, 38, stackValue)
-		sb.WriteString(fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, registerStr, 44, stackStr))
+		stackStr := fmt.Sprintf("%s %1d: %-*s", stackAliases[i], i, 58, stackValue)
+		sb.WriteString(fmt.Sprintf("  ║ %-*s║ %-*.44s║\n", 25, registerStr, 64, stackStr))
 	}
 	sb.WriteString(uiS3)
 	sb.WriteString(fmt.Sprintf("  ║ Status: 🯀 %-*s║\n", 81, vm.Message))

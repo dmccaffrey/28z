@@ -21,15 +21,22 @@ func main() {
 		OutputHelpDocumentation()
 		return
 	}
+
+	err := core.LoadRom()
+	if err != nil {
+		fmt.Printf("Failed to load ROM: %s\n", err.Error())
+		return
+	}
+
+	core.InitializeInstructionMap()
+
 	vm := core.NewCore()
 	writer := io.Writer(os.Stdout)
 
 	display(&vm, writer)
 	input, _ := getConsoleInput()
 	for input != "exit" {
-		if input == "run" || input == ">>" {
-			vm.Mode = core.Running
-		}
+
 		vm.ProcessRaw(input)
 		fmt.Printf("msg=%s", vm.Message)
 		//stack := vm.GetStackString()
