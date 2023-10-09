@@ -108,6 +108,22 @@ func (d StackData) Pow(input StackData) (StackData, error) {
 	return d, nil
 }
 
+func (d StackData) Or(input StackData) (StackData, error) {
+	if d.dataType == Str || input.dataType == Str {
+		return StackData{}, errors.New("Or not defined for strings")
+	}
+	d.flt = float64(int(d.flt) | int(input.flt))
+	return d, nil
+}
+
+func (d StackData) And(input StackData) (StackData, error) {
+	if d.dataType == Str || input.dataType == Str {
+		return StackData{}, errors.New("And not defined for strings")
+	}
+	d.flt = float64(int(d.flt) & int(input.flt))
+	return d, nil
+}
+
 func (d StackData) ChS() StackData {
 	d.flt = - d.flt
 	return d
