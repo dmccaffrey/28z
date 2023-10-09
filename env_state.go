@@ -35,7 +35,10 @@ func (s EnvState) Display(instruction string) {
 	if len(s.err) != 0 {
 		content += fmt.Sprintf("\n<Err: %s>", s.err)
 	}
-	content += fmt.Sprintf("\n| %s", s.console)
+	lines := strings.Split(s.console, "\n")
+	for _,v := range lines {
+		content += fmt.Sprintf("\n| %s", v)
+	}
 	content += "\n\n: "
 	s.writer.Publish(content)
 }
@@ -157,7 +160,8 @@ func (s *EnvState) Parse(input string) bool {
 			s.console = ""
 		}
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
-			s.console += x.ToString() + " "
+			output := strings.Replace(x.ToString(), `\n`, "\n", -1)
+			s.console += output + " "
 			return x, nil
 		})
 	case 'l':
