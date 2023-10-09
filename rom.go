@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 	"path/filepath"
 	"os"
 	"strings"
@@ -42,6 +43,7 @@ var constsMap = map[string]float64 {
 	//"$maxf": math.MaxFloat64, ????
 	"$maxf": math.MaxInt64,
 	"$graphW": graphW,
+	"$graphH": graphH,
 }
 
 var progsMap = map[string]string {}
@@ -69,6 +71,10 @@ var uFuncs = map[string]UnaryFunc {
 	},
 	"@logb": func (x StackData) (StackData, error) {
 		x.flt = math.Logb(x.flt)
+		return x, nil
+	},
+	"@rand": func (x StackData) (StackData, error) {
+		x.flt = rand.Float64() * x.flt
 		return x, nil
 	},
 }
