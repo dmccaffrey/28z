@@ -1,0 +1,18 @@
+'Function?
+q
+'rd
+s
+
+'Interval end?
+q
+'rc
+s
+
+$graphW
+"rb
+s
+
+' 'rb r $graphW / 'rc r * 'rd r e $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - 7 ; s 50 ~ g
+"ra
+s
+l

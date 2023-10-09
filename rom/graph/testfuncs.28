@@ -1,0 +1,24 @@
+ca
+$graphW
+"rb
+s
+' 'rb r $graphW / 720 * @sin $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - 2 ; s 50 ~ g
+"ra
+s
+l
+
+$graphW
+"rb
+s
+' 'rb r $graphW / 720 * @cos $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - 4 ; s 50 ~ g
+"ra
+s
+l
+
+$graphW
+"rb
+s
+' 'rb r $graphW / 720 * @sin 2 / $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - 1 ; s 50 ~ g
+"ra
+s
+l

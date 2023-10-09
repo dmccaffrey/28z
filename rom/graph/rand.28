@@ -1,0 +1,11 @@
+cm
+$graphW
+$graphH
+*
+'rb
+s
+'10 @rand i 7 @rand @round i & 'rb r s 5 ~ g
+'ra
+s
+l
+g
