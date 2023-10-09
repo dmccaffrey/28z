@@ -64,6 +64,6 @@ func Display(s EnvState, instruction string, alwaysUpdate bool) {
 	sb.WriteString(uiS4)
 	sb.WriteString(uiIn)
 	sb.WriteString(uiS5)
-	sb.WriteString("    \033[2A> ")
+	sb.WriteString(fmt.Sprintf("    \033[2A %s > ", s.prompt))
 	s.writer.Publish(sb.String())
 }
