@@ -8,14 +8,18 @@ import (
 	"time"
 )
 
-var uiS0 = fmt.Sprintf("\n  ╓%s╖\n", strings.Repeat("─", 92))
-var uiS1 = fmt.Sprintf("  ╟%s╥%s╢\n", strings.Repeat("─", 26), strings.Repeat("─", 65))
-var headers = fmt.Sprintf("  ║ %-*s║ %-*s║\n", 25, "Registers", 64, "Stack")
-var uiS2 = fmt.Sprintf("  ╟%s╫%s╢\n", strings.Repeat("┄", 26), strings.Repeat("┄", 65))
-var uiS3 = fmt.Sprintf("  ╟%s╨%s╢\n", strings.Repeat("─", 26), strings.Repeat("─", 65))
-var uiS4 = fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 92))
-var uiIn = fmt.Sprintf("  ║  %*s🮴 ║\n", 88, "")
-var uiS5 = fmt.Sprintf("  ╙─%s╜\n", strings.Repeat("─", 91))
+var regWidth = 13
+var stackWidth = 41
+var msgWidth = 30
+var scrWidth = 92
+var scrHeight = 30
+
+var uiS0 = fmt.Sprintf(" ╓%s╥%s╥%s╖\n", strings.Repeat("─", regWidth+2), strings.Repeat("─", stackWidth+2), strings.Repeat("┄", msgWidth+2))
+var uiS1 = fmt.Sprintf(" ╟%s╥%s╥%s╢\n", strings.Repeat("─", regWidth+2), strings.Repeat("─", stackWidth+2), strings.Repeat("┄", msgWidth+2))
+var uiS3 = fmt.Sprintf(" ╟%s╨%s╨%s╢\n", strings.Repeat("─", regWidth+2), strings.Repeat("─", stackWidth+2), strings.Repeat("┄", msgWidth+2))
+var uiS4 = fmt.Sprintf(" ╟%s╢\n", strings.Repeat("─", 92))
+var uiIn = fmt.Sprintf(" ║  %*s ║\n", 89, "")
+var uiS5 = fmt.Sprintf(" ╙─%s╜\n", strings.Repeat("─", 91))
 
 var stackAliases = []string{"(x)", "(y)", "(z)", "   ", "   "}
 
@@ -24,37 +28,42 @@ var lastUiUpdate = time.Now().Local()
 func Display(vm *core.Core) string {
 	var sb strings.Builder
 	sb.WriteString(uiS0)
-	sb.WriteString(fmt.Sprintf("  ║ \x1b[31m28z\033[0m ┇ Current Instruction = %-*s ║\n", 62, vm.LastInput))
-	sb.WriteString(uiS1)
-	sb.WriteString(headers)
-	sb.WriteString(uiS2)
 	stack := vm.GetStackArray()
 	registerMap := vm.GetRegisterMap()
 	for i := 4; i >= 0; i-- {
 		regKey := core.RegisterKeys[i]
-		registerStr := fmt.Sprintf("R%s: %04d", regKey, registerMap[regKey])
+		registerStr := fmt.Sprintf("%s: %04d", regKey, registerMap[regKey])
 		stackValue := ""
 		if i < len(stack) {
 			stackValue = stack[i].GetString()
 		}
 		stackStr := fmt.Sprintf("%s %1d: %-*s", stackAliases[i], i, 58, stackValue)
-		sb.WriteString(fmt.Sprintf("  ║ %-*s║ %-*.44s║\n", 25, registerStr, 64, stackStr))
+		msgStr := ""
+		switch i {
+		case 0:
+			msgStr = fmt.Sprintf("%-5s %s", "Last:", vm.LastInput)
+			break
+		case 1:
+			msgStr = fmt.Sprintf("%-5s %s", "Err:", vm.Message)
+			break
+		case 2:
+			msgStr = fmt.Sprintf("%-5s %s", "Mode:", vm.GetMode())
+			break
+		}
+		sb.WriteString(fmt.Sprintf(" ║ %-*s ║ %-*.40s ║ %-*.30s ║\n", regWidth, registerStr, stackWidth, stackStr, msgWidth, msgStr))
 	}
 	sb.WriteString(uiS3)
-	sb.WriteString(fmt.Sprintf("  ║ Status: 🯀 %-*s║\n", 81, vm.Message))
-
-	sb.WriteString(uiS4)
-	end := int(math.Min(float64(len(vm.Console)), 36))
+	end := int(math.Min(float64(len(vm.Console)), float64(scrHeight)))
 	for i := 0; i < end; i++ {
-		sb.WriteString(fmt.Sprintf("  ║%-*s║\n", 92, vm.Console[i]))
+		sb.WriteString(fmt.Sprintf(" ║%-*.92s║\n", scrWidth, vm.Console[i]))
 	}
-	for i := 36 - end; i > 0; i-- {
-		sb.WriteString(fmt.Sprintf("  ║%-*s║\n", 92, ""))
+	for i := scrHeight - end; i > 0; i-- {
+		sb.WriteString(fmt.Sprintf(" ║%-*s║\n", scrWidth, ""))
 
 	}
 	sb.WriteString(uiS4)
 	sb.WriteString(uiIn)
 	sb.WriteString(uiS5)
-	sb.WriteString(fmt.Sprintf("    \033[2A %s > ", ""))
+	sb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m > "))
 	return sb.String()
 }

@@ -19,6 +19,11 @@ const (
 	Reg_Count        = "COUNT"
 )
 
+var ModeNameMap = map[ExecutionMode]string{
+	Running: "Running",
+	Storing: "Storing",
+	Halted:  "Halted",
+}
 var boolToI = map[bool]int{false: 0, true: 1}
 var RegisterKeys = []string{Reg_Count, Reg_Depth, Reg_State, Reg_Flags, Reg_LoopC}
 
@@ -61,6 +66,7 @@ func (c *Core) DropStack() {
 }
 
 func (c *Core) ProcessRaw(input string) {
+	c.unsetError()
 	c.LastInput = input
 	if input == "run" || input == ">" || input == "}" || input == ")" {
 		c.Mode = Running
@@ -74,16 +80,13 @@ func (c *Core) ProcessRaw(input string) {
 		}
 		if input[0] == '$' {
 			input = strings.TrimPrefix(input, "$")
-			reg, ok := c.GetRegisterMap()[input]
-			if ok {
-				c.Push(FloatValue{value: float64(reg)})
+			ref := ReferenceValue{value: input}
+			if c.Mode == Storing {
+				c.Push(ref)
 				return
 			}
-			variable, ok := c.VarMap[input]
-			if ok {
-				c.Push(variable)
-				return
-			}
+			c.Push(ref.Dereference(c))
+			return
 		}
 	}
 	result, err := strconv.ParseFloat(input, 64)
@@ -97,7 +100,7 @@ func (c *Core) ProcessRaw(input string) {
 func (c *Core) ProcessInstruction(instruction string) {
 	impl := instructionMap[instruction]
 	if !impl.IsValid() {
-		c.setError("Not a valid instruciton")
+		c.setError("Not a valid instruction")
 		return
 	}
 
@@ -132,6 +135,10 @@ func (c *Core) ProcessCoreValue(value CoreValue) {
 func (c *Core) setError(error string) {
 	c.Message = error
 	c.Mode = Halted
+}
+
+func (c *Core) unsetError() {
+	c.Message = "OK"
 }
 
 func (c *Core) GetStackString() string {
@@ -184,6 +191,10 @@ func (c *Core) WriteLine(line string) {
 
 func (c *Core) ClearConsole() {
 	c.Console = make([]string, 0)
+}
+
+func (c *Core) GetMode() string {
+	return ModeNameMap[c.Mode]
 }
 
 func zeroFunc(core *Core) int {

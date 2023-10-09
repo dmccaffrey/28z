@@ -310,7 +310,7 @@ func print(core *Core) InstructionResult {
 
 func render(core *Core) InstructionResult {
 	core.ClearConsole()
-	for r := 0; r < 36; r++ {
+	for r := 0; r < 30; r++ {
 		var sb strings.Builder
 		for c := 0; c < 92; c++ {
 			value := core.Ram[92*r+c]

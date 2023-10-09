@@ -12,7 +12,8 @@ const (
 	StringType                    = 2
 	SequenceType                  = 3
 	InstructionType               = 4
-	DefaultType                   = 5
+	ReferenceType                 = 5
+	DefaultType                   = 6
 )
 
 type (
@@ -25,20 +26,24 @@ type (
 	}
 	DefaultValue struct{}
 	FloatValue   struct {
-		*DefaultValue
+		DefaultValue
 		value float64
 	}
 	StringValue struct {
-		*DefaultValue
+		DefaultValue
 		value string
 	}
 	SequenceValue struct {
-		*DefaultValue
+		DefaultValue
 		value []CoreValue
 	}
 	InstructionValue struct {
-		*DefaultValue
+		DefaultValue
 		value Instruction
+	}
+	ReferenceValue struct {
+		DefaultValue
+		value string
 	}
 )
 
@@ -48,7 +53,7 @@ func (d DefaultValue) GetFloat() float64 {
 }
 
 func (d DefaultValue) GetString() string {
-	return ""
+	return "nil"
 }
 
 func (d DefaultValue) GetInt() int {
@@ -60,7 +65,7 @@ func (d DefaultValue) GetType() CoreValueType {
 }
 
 func (d DefaultValue) GetSequence() []CoreValue {
-	return []CoreValue{d}
+	return []CoreValue{}
 }
 
 // Float
@@ -125,4 +130,25 @@ func (s InstructionValue) CheckArgs(core *Core) bool {
 
 func (s InstructionValue) Eval(core *Core) InstructionResult {
 	return s.value.impl(core)
+}
+
+// Reference
+func (r ReferenceValue) GetType() CoreValueType {
+	return ReferenceType
+}
+
+func (r ReferenceValue) Dereference(core *Core) CoreValue {
+	reg, ok := core.GetRegisterMap()[r.value]
+	if ok {
+		return FloatValue{value: float64(reg)}
+	}
+	variable, ok := core.VarMap[r.value]
+	if ok {
+		return variable
+	}
+	return DefaultValue{}
+}
+
+func (r ReferenceValue) GetString() string {
+	return "REF/" + r.value
 }
