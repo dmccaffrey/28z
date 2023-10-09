@@ -1,7 +1,11 @@
+ca
 $graphW
+$graphH
+*
 'rb
 s
-'2.0 @rand 1 - g pg 25 ~ d $graphW 1 - @rand 1 + 'rb s 
+'10 @rand i 1 & 'rb r  s g
 'ra
 s
 l
+g

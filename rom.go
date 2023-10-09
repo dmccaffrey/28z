@@ -51,6 +51,7 @@ var constsMap = map[string]float64 {
 	"$maxf": math.MaxInt64,
 	"$graphW": graphW,
 	"$graphH": graphH,
+	"$ramSize": ramSize,
 }
 
 var progsMap = map[string]string {}

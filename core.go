@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"fmt"
+	"math"
 )
 
 type Instruction string
@@ -36,8 +37,7 @@ func (d *StackData) Loop(f StackData, p Parser) error {
 	return nil
 }
 
-/*
-func GraphPoint(x StackData, rb StackData, graph *Graph) (StackData, error) {
+func GraphPoint(x StackData, rb StackData, ram *Ram) (StackData, error) {
 	if x.flt > 1.0 || x.flt < -1.0 {
 		return x, errors.New("Graph value must be between -1 and 1")
 	}
@@ -51,11 +51,11 @@ func GraphPoint(x StackData, rb StackData, graph *Graph) (StackData, error) {
 	}
 	xPt := int(rb.flt)
 	if xPt < graphW {
-		graph[xPt][yPt] = true
+		index := yPt * graphW + xPt
+		ram[index] = 1
 	}
 	return x, nil
 }
-*/
 
 func RenderGraph(console *string, ram Ram) {
 	*console = ""
