@@ -117,6 +117,7 @@ func (d StackData) Div(input StackData) (StackData, error) {
 	if input.flt == 0 {
 		return input, errors.New("Division by zero is not defined")
 	}
+	result.flt = d.flt / input.flt
 	return result, nil
 }
 
@@ -183,6 +184,7 @@ func (s EnvState) Display() string {
 }
 
 func (s *EnvState) Parse(input string) {
+	s.err = ""
 	switch input[0] {
 	case '+':
 		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
@@ -201,19 +203,19 @@ func (s *EnvState) Parse(input string) {
 			return y.Mult(x)
 		})
 	case 'd':
-		_ = s.Pop()
+		s.applyUnaryFunc(func(x StackData) (StackData, error) {
+			return DefaultStackData(), nil
+		})
 	case 's':
 		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
-			var reg int
+			reg := len(s.regs)
 			if (x.dataType == Str) {
-				reg = registerMap[x.str]
-			} else {
-				reg = int(x.flt)
+				reg = registerMap[strings.ToUpper(x.str)]
 			}
 			if (reg < len(s.regs)-1) {
 				s.regs[reg] = y
 			} else {
-				return DefaultStackData(), errors.New(fmt.Sprintf("Invalid register: reg=%d", reg))
+				return y, errors.New(fmt.Sprintf("Invalid register: reg=%d", reg))
 			}
 			return DefaultStackData(), nil
 		})
@@ -221,7 +223,7 @@ func (s *EnvState) Parse(input string) {
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
 			var reg int
 			if (x.dataType == Str) {
-				reg = registerMap[x.str]
+				reg = registerMap[strings.ToUpper(x.str)]
 			} else {
 				reg = int(x.flt)
 			}
@@ -233,9 +235,7 @@ func (s *EnvState) Parse(input string) {
 	case 'p':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
 			s.console += x.ToString() + " "
-			result := DefaultStackData()
-			result.dataType = Nil
-			return result, nil
+			return x, nil
 		})
 	case ';':
 		if len(s.stack) >= 2 {
