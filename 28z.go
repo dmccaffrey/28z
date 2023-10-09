@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"bufio"
+	"flag"
 )
 
 var clear = fmt.Sprintf("%c[%dA%c[2K", 27, 1, 27)
@@ -42,10 +43,12 @@ func (w *TermWriter) Publish(content string) {
 }
 
 func main() {
+	enableDebug := flag.Bool("debug", false, "Enable debug output")
+	flag.Parse()
+
 	loadRom()
-	//os.Exit(0)
-	//state := NewEnvState(DebugTermWriter())
-	state := NewEnvState(InteractiveTermWriter())
+	writer := TermWriter{0, io.Writer(os.Stdout), windowSize{0,0}, !*enableDebug}
+	state := NewEnvState(writer)
 	state.Display("")
 	in := bufio.NewReader(os.Stdin)
 	for {
