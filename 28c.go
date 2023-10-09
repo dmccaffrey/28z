@@ -493,7 +493,10 @@ func main() {
 	for {
 		writer.Publish(state.Display())
 		//fmt.Scanf("%s", &input)
-		input, _ := in.ReadString('\n')
+		input, err := in.ReadString('\n')
+		if err == io.EOF {
+			return
+		}
 		input = strings.TrimSuffix(input, "\n")
 		if input == "exit" {
 			break
