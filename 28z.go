@@ -1,61 +1,49 @@
 package main
 
 import (
+	"bufio"
+	"dmccaffrey/28z/core"
+	"dmccaffrey/28z/ui"
 	"fmt"
-	"strings"
 	"io"
 	"os"
-	"flag"
+	"strings"
 )
 
-var clear = fmt.Sprintf("%c[%dA%c[2K", 27, 1, 27)
-
-type windowSize struct {
-	rows    uint16
-	cols    uint16
-}
-
-type TermWriter struct {
-	lastLineCount int
-	output io.Writer
-	winSize windowSize
-	interactive bool
-}
-
-func (w *TermWriter) Publish(content string) {
-	if w.interactive {
-		w.output.Write([]byte(strings.Repeat(clear, w.lastLineCount)))
-		w.output.Write([]byte("\033[2J"))
-	}
-
-	// +1 for the newlilne caused by input
-	w.lastLineCount = strings.Count(content, "\n") + 1
-	w.output.Write([]byte(content))
-}
+var reader *bufio.Reader = bufio.NewReader(os.Stdin)
 
 func main() {
-	enableDebug := flag.Bool("debug", false, "Enable debug output")
-	//enableRegs := flag.Bool("regs", false, "Enable debug output")
-	flag.Parse()
+	//enableDebug := flag.Bool("debug", false, "Enable debug output")
 
-	loadRom()
-	writer := TermWriter{0, io.Writer(os.Stdout), windowSize{0,0}, !*enableDebug}
-	state := NewEnvState(writer)
-	Display(state, "", true)
-	for {
-		input, err := getInput()
-		if err == io.EOF {
-			return
+	vm := core.NewCore()
+	writer := io.Writer(os.Stdout)
+
+	display(&vm, writer)
+	input, _ := getConsoleInput()
+	for input != "exit" {
+		if input == "run" || input == ">>" {
+			vm.Mode = core.Running
 		}
-		input = strings.TrimSuffix(input, "\n")
-		if input == "exit" {
-			break
-		}
-		if !state.Parse(input, true) {
-			break
-		}
-		Display(state, input, true)
+		vm.ProcessRaw(input)
+		fmt.Printf("msg=%s", vm.Message)
+		//stack := vm.GetStackString()
+		//fmt.Println(stack)
+		display(&vm, writer)
+		input, _ = getConsoleInput()
 	}
-	Display(state, "exit", true)
-	fmt.Println("\n")
+}
+
+func getConsoleInput() (string, error) {
+	input, err := reader.ReadString('\n')
+	input = strings.TrimSuffix(input, "\n")
+	return input, err
+}
+
+func clearConsole() {
+	fmt.Print("\033[H\033[2J")
+}
+
+func display(vm *core.Core, writer io.Writer) {
+	clearConsole()
+	writer.Write([]byte(ui.Display(vm)))
 }
