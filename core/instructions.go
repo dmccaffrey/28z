@@ -243,6 +243,9 @@ func eval(core *Core) InstructionResult {
 	for i := range x.GetSequence() {
 		val := x.GetSequence()[end-i]
 		if val.GetType() != InstructionType {
+			if val.GetType() == ReferenceType {
+				val = val.(ReferenceValue).Dereference(core)
+			}
 			core.Push(val)
 
 		} else {
