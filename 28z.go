@@ -5,7 +5,6 @@ import (
 	"strings"
 	"io"
 	"os"
-	"bufio"
 	"flag"
 )
 
@@ -43,9 +42,8 @@ func main() {
 	writer := TermWriter{0, io.Writer(os.Stdout), windowSize{0,0}, !*enableDebug}
 	state := NewEnvState(writer)
 	Display(state, "", true)
-	in := bufio.NewReader(os.Stdin)
 	for {
-		input, err := in.ReadString('\n')
+		input, err := getInput()
 		if err == io.EOF {
 			return
 		}
