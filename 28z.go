@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"dmccaffrey/28z/core"
 	"dmccaffrey/28z/ui"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -14,7 +15,12 @@ var reader *bufio.Reader = bufio.NewReader(os.Stdin)
 
 func main() {
 	//enableDebug := flag.Bool("debug", false, "Enable debug output")
-
+	help := flag.Bool("help", false, "Output help documentation")
+	flag.Parse()
+	if *help {
+		OutputHelpDocumentation()
+		return
+	}
 	vm := core.NewCore()
 	writer := io.Writer(os.Stdout)
 
@@ -46,4 +52,8 @@ func clearConsole() {
 func display(vm *core.Core, writer io.Writer) {
 	clearConsole()
 	writer.Write([]byte(ui.Display(vm)))
+}
+
+func OutputHelpDocumentation() {
+	core.OutputInstructionHelpDoc()
 }

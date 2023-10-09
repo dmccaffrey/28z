@@ -1,5 +1,7 @@
 package core
 
+import "fmt"
+
 var successResult = InstructionResult{false, ""}
 
 type InstructionImpl func(*Core) InstructionResult
@@ -9,6 +11,7 @@ type Instruction struct {
 	argCount    int
 	resultCount int
 	impl        InstructionImpl
+	usage       string
 }
 
 type InstructionResult struct {
@@ -21,34 +24,41 @@ func (i *Instruction) IsValid() bool {
 }
 
 var instructionMap = map[string]Instruction{
-	"+": {"Add x and y", 2, 1, add},
-	"-": {"Subtract x from y", 2, 1, subtract},
-	"*": {"Multiply y by x", 2, 1, multiply},
-	"/": {"Divide y by x", 2, 1, divide},
+	"+": {"Add x and y", 2, 1, add, "6 ⤶ 2 ⤶ + ⤶ ⤒8"},
+	"-": {"Subtract x from y", 2, 1, subtract, "6 ⤶ 2 ⤶ - ⤶ ⤒4"},
+	"*": {"Multiply y by x", 2, 1, multiply, "6 ⤶ 2 ⤶ * ⤶ ⤒12"},
+	"/": {"Divide y by x", 2, 1, divide, "6 ⤶ 2 ⤶ / ⤶ ⤒3"},
 
-	"<<": {"Define function", 1, 0, define},
-	">>": {"Reduce function", 0, 0, reduce},
+	"<<": {"Define function", 1, 0, define, ""},
+	">>": {"Reduce function", 0, 0, reduce, ""},
 
-	"enter": {"Enter function", 1, 0, enter},
-	"end":   {"Return from function", 1, 0, end},
+	"enter": {"Enter function", 1, 0, enter, ""},
+	"end":   {"Return from function", 1, 0, end, ""},
 
-	"store":    {"Store y into x", 2, 1, store},
-	"put":      {"Put y into x", 2, 0, put},
-	"exchange": {"Exchange y and the value in var x", 2, 1, exchange},
-	"recall":   {"Recall x", 1, 1, recall},
-	"purge":    {"Purge x", 1, 0, purge},
-	"eval":     {"Evaluate x", 1, 0, nil},
+	"store":    {"Store y into x", 2, 1, store, "2 ⤶ 'a ⤶ store ⤶ ⤒2; y⥗a"},
+	"put":      {"Put y into x", 2, 0, put, "2 ⤶ 'a ⤶ store ⤶ y⥗a"},
+	"exchange": {"Exchange y and the value in var x", 2, 1, exchange, "3 ⤶ 'a ⤶ exchange ⤶ ⤒a 3⥗a"},
+	"recall":   {"Recall x", 1, 1, recall, "'a ⤶ recall ⤶ ⤒a"},
+	"purge":    {"Purge x", 1, 0, purge, "'a ⤶ purge ⤶ undefined⥗a"},
+	"eval":     {"Evaluate x", 1, 0, nil, ""},
 
-	"drop":    {"Drop x", 1, 0, drop},
-	"swap":    {"Swap x and y", 2, 2, swap},
-	"clear":   {"Clear stack", 0, 0, clear},
-	"collect": {"Collect stack into x", 1, 1, nil},
+	"drop":    {"Drop x", 1, 0, drop, "drop ⤶"},
+	"swap":    {"Swap x and y", 2, 2, swap, "swap ⤶ ⤒x,y"},
+	"clear":   {"Clear stack", 0, 0, clear, "clear ⤶"},
+	"collect": {"Collect stack into x", 1, 1, nil, ""},
 
-	"print":  {"Print x", 1, 0, print},
-	"graph":  {"Render graph", 0, 0, nil},
-	"status": {"Display status", 0, 0, nil},
+	"print":  {"Print x", 1, 0, print, "'Hello world ⤶ print ⤶ Hello world⥱Console"},
+	"graph":  {"Render graph", 0, 0, nil, ""},
+	"status": {"Display status", 0, 0, nil, ""},
 
-	"halt": {"Halt execution", 0, 0, halt},
+	"halt": {"Halt execution", 0, 0, halt, "halt ⤶"},
+}
+
+func OutputInstructionHelpDoc() {
+	fmt.Printf("## Supported instructions\n\n")
+	for k, v := range instructionMap {
+		fmt.Printf("### %s\nDescription: %s\nArg count: %d\nReult count: %d\nUsage: %s\n\n", k, v.description, v.argCount, v.resultCount, v.usage)
+	}
 }
 
 func add(core *Core) InstructionResult {
