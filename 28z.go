@@ -370,7 +370,6 @@ func (s *EnvState) Parse(input string) bool {
 			}
 		case '>':
 			if x.flt > y.flt {
-				s.console += ">"
 				res = 1.0
 			}
 		}
