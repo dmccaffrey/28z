@@ -35,10 +35,10 @@ func (s *EnvState) Parse(input string, userInput bool) bool {
 	}
 	s.err = ""
 	s.prompt = ""
+	defer Display(*s, input, userInput)
 	if int(s.regs[RC].flt)  & stepBit != 0 {
 		defer getInput()
 	}
-	defer Display(*s, input, userInput)
 	if input == "exit" {
 		os.Exit(0)
 	}

@@ -2,7 +2,7 @@ ca
 $graphW
 "rb
 s
-' 'rb r $graphW / 720 * @sin $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - s 50 ~ g
+' 'rb r $graphW / 720 * @sin $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - 7 ; s 50 ~ g
 "ra
 s
 l
@@ -10,7 +10,7 @@ l
 $graphW
 "rb
 s
-' 'rb r $graphW / 720 * @cos $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - s 50 ~ g
+' 'rb r $graphW / 720 * @cos $graphH 2 / * @round $graphH 2 / + $graphW * 'rb r + $graphW - 7 ; s 50 ~ g
 "ra
 s
 l

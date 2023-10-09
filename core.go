@@ -66,11 +66,9 @@ func RenderGraph(console *string, ram Ram) {
 	for r:=0; r<graphH; r++ {
 		for c:=0; c<graphW; c++ {
 			index := r * graphW + c
-			if ram[index] == 2 {
-				sb.WriteString("\x1b[31m█\033[0m")
-
-			} else if ram[index] == 1 {
-				sb.WriteString("█")
+			colorBits := ram[index] & 7
+			if ram[index] > 0 {
+				sb.WriteString(fmt.Sprintf("\x1b[3%dm█\033[0m", colorBits))
 
 			} else {
 				sb.WriteString("░")
