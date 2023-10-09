@@ -36,10 +36,10 @@ func Display(s EnvState, instruction string, alwaysUpdate bool) {
 			stackIndex := len(s.stack) - i - 1
 			stackEntry = s.stack[stackIndex]
 		}
-		registerStr := fmt.Sprintf("R%s: (%c) %-*s", string(i + 65), s.regs[i].dataType, 20, s.regs[i].ToString())
+		registerStr := fmt.Sprintf("R%s: (%c) %-*s", string(i + 65), s.regs[i].dataType, 20, s.regs[i].ToString(true))
 		stackStr := fmt.Sprintf("%d:", i)
 		if stackEntry.dataType != Nil {
-			stackStr = fmt.Sprintf("%d: (%c) %-*s", i, stackEntry.dataType, 35, stackEntry.ToString())
+			stackStr = fmt.Sprintf("%d: (%c) %-*s", i, stackEntry.dataType, 35, stackEntry.ToString(true))
 		}
 		sb.WriteString(fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, registerStr, 44, stackStr))
 	}

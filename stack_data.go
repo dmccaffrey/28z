@@ -2,7 +2,6 @@ package main
 
 import (
 	"strings"
-	"time"
 	"strconv"
 	"errors"
 	"fmt"
@@ -21,9 +20,6 @@ func DefaultStackData() StackData {
 
 func (d *StackData) Parse(s string) error {
 	switch s[0] {
-	case 'q':
-		time.Sleep(3 * time.Second)
-		return nil
 	case '\'':
 		s = strings.TrimSuffix(s, "'")
 		s = strings.TrimPrefix(s, "'")
@@ -129,11 +125,11 @@ func (d StackData) ChS() StackData {
 	return d
 }
 
-func (d StackData) ToString() string {
+func (d StackData) ToString(limit bool) string {
 	stackStr := "?"
 	switch d.dataType {
 	case Str:
-		stackStr = fmt.Sprintf("%s", d.str)
+		stackStr = d.str
 	case Flt:
 		stackStr = fmt.Sprintf("%.13E", d.flt)
 	case Hex:
@@ -143,7 +139,7 @@ func (d StackData) ToString() string {
 	case Nil:
 		stackStr = ""
 	}
-	if len(stackStr) > 35 {
+	if limit && len(stackStr) > 35 {
 		stackStr = stackStr[:32] + "..."
 	}
 	return stackStr
