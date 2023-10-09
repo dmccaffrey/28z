@@ -28,10 +28,11 @@ func (i *Instruction) IsValid() bool {
 }
 
 var instructionMap = map[string]Instruction{
-	"+": {"Add x and y", 2, 1, add, "6 ⤶ 2 ⤶ + ⤶ ⤒8"},
-	"-": {"Subtract x from y", 2, 1, subtract, "6 ⤶ 2 ⤶ - ⤶ ⤒4"},
-	"*": {"Multiply y by x", 2, 1, multiply, "6 ⤶ 2 ⤶ * ⤶ ⤒12"},
-	"/": {"Divide y by x", 2, 1, divide, "6 ⤶ 2 ⤶ / ⤶ ⤒3"},
+	"+":   {"Add x and y", 2, 1, add, "6 ⤶ 2 ⤶ + ⤶ ⤒8"},
+	"-":   {"Subtract x from y", 2, 1, subtract, "6 ⤶ 2 ⤶ - ⤶ ⤒4"},
+	"*":   {"Multiply y by x", 2, 1, multiply, "6 ⤶ 2 ⤶ * ⤶ ⤒12"},
+	"/":   {"Divide y by x", 2, 1, divide, "6 ⤶ 2 ⤶ / ⤶ ⤒3"},
+	"mod": {"y modulus by x", 2, 1, modulus, "6 ⤶ 2 ⤶ / ⤶ ⤒0"},
 
 	"{":    {"Define function", 1, 0, define, ""},
 	"}":    {"Reduce function", 0, 0, reduce, ""},
@@ -144,6 +145,19 @@ func divide(core *Core) InstructionResult {
 	return InstructionResult{true, "Unexpected operands"}
 }
 
+func modulus(core *Core) InstructionResult {
+	x, y := consumeTwo(core)
+	if x.GetType() == FloatType {
+		core.Push(FloatValue{value: float64(y.GetInt() % x.GetInt())})
+		return successResult
+	}
+	if x.GetType() == StringType {
+		core.Push(y)
+		return successResult
+	}
+	return InstructionResult{true, "Unexpected operands"}
+}
+
 func define(core *Core) InstructionResult {
 	argCount := consumeOne(core)
 	core.NewStack()
@@ -247,14 +261,14 @@ func eval(core *Core) InstructionResult {
 
 func store(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
-	core.VarMap[x.GetString()] = y
+	core.Store(x, y)
 	core.Push(y)
 	return successResult
 }
 
 func put(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
-	core.VarMap[x.GetString()] = y
+	core.Store(x, y)
 	return successResult
 }
 
@@ -304,6 +318,9 @@ func clear(core *Core) InstructionResult {
 
 func print(core *Core) InstructionResult {
 	x := consumeOne(core)
+	if x.GetType() == ReferenceType {
+		x = x.(ReferenceValue).Dereference(core)
+	}
 	core.WriteLine(x.GetString())
 	return successResult
 }
@@ -318,7 +335,7 @@ func render(core *Core) InstructionResult {
 				sb.WriteByte(value)
 
 			} else {
-				sb.WriteByte(' ')
+				sb.WriteByte('-')
 			}
 		}
 		core.WriteLine(sb.String())

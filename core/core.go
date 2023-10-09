@@ -197,6 +197,22 @@ func (c *Core) GetMode() string {
 	return ModeNameMap[c.Mode]
 }
 
+func (c *Core) Store(key CoreValue, value CoreValue) {
+	if key.GetType() == FloatType {
+		if key.GetInt() >= len(c.Ram) {
+			c.setError("RAM offset too large")
+			return
+		}
+		c.Ram[key.GetInt()] = byte(value.GetInt())
+		return
+	}
+	if key.GetType() == StringType {
+		c.VarMap[key.GetString()] = value
+		return
+	}
+	c.setError("Invalid key type")
+}
+
 func zeroFunc(core *Core) int {
 	return 0
 }
