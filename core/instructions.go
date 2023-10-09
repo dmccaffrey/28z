@@ -57,7 +57,7 @@ var instructionMap = map[string]Instruction{
 func OutputInstructionHelpDoc() {
 	fmt.Printf("## Supported instructions\n\n")
 	for k, v := range instructionMap {
-		fmt.Printf("### %s\nDescription: %s\nArg count: %d\nReult count: %d\nUsage: %s\n\n", k, v.description, v.argCount, v.resultCount, v.usage)
+		fmt.Printf("### %s\n- Description: %s\n- Arg count: %d\n- Result count: %d\n- Usage: %s\n\n", k, v.description, v.argCount, v.resultCount, v.usage)
 	}
 }
 
