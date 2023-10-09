@@ -45,18 +45,24 @@ func (s EnvState) Display(instruction string) {
 	}
 	content += fmt.Sprintf("  ╟%s╨%s╢\n", strings.Repeat("─", 46), strings.Repeat("─", 45))
 	if s.err != "" {
-		content += fmt.Sprintf("  ║ 🯀 %-*s║\n", 89, s.err)
+		content += fmt.Sprintf("  ║ Status: 🯀 %-*s║\n", 81, s.err)
 
 	} else {
-		content += fmt.Sprintf("  ║ 🮱 %-*s║\n", 89, "OK")
+		content += fmt.Sprintf("  ║ Status: 🮱 %-*s║\n", 81, "OK")
 	}
 	content += fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 92))
 	lines := strings.Split(s.console, "\n")
 	for _,v := range lines {
 		content += fmt.Sprintf("  ║%-*s║\n", 92, v)
 	}
-	content += fmt.Sprintf("  ╟%s╜\n", strings.Repeat("─", 92))
-	content += "  ║\n  ╙─🮥 <instruction> 🮴: "
+	for i := 36-len(lines); i>0; i-- {
+		content += fmt.Sprintf("  ║%-*s║\n", 92, "")
+
+	}
+	content += fmt.Sprintf("  ╟%s╢\n", strings.Repeat("─", 92))
+	content += fmt.Sprintf("  ║  %*s🮴 ║\n", 88, "")
+	content += fmt.Sprintf("  ╙─%s╜\n", strings.Repeat("─", 91))
+	content += "    \033[2A> "
 	s.writer.Publish(content)
 }
 
