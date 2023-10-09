@@ -36,10 +36,10 @@ func (s EnvState) Display(instruction string) {
 			stackIndex := len(s.stack) - i - 1
 			stackEntry = s.stack[stackIndex]
 		}
-		registerStr := fmt.Sprintf("R%s: %*s (%c)", string(i + 65), 20, s.regs[i].ToString(), s.regs[i].dataType)
+		registerStr := fmt.Sprintf("R%s: (%c) %-*s", string(i + 65), s.regs[i].dataType, 20, s.regs[i].ToString())
 		stackStr := fmt.Sprintf("%d:", i)
 		if stackEntry.dataType != Nil {
-			stackStr = fmt.Sprintf("%d: %*s (%c)", i, 20, stackEntry.ToString(), stackEntry.dataType)
+			stackStr = fmt.Sprintf("%d: (%c) %-*s", i, stackEntry.dataType, 35, stackEntry.ToString())
 		}
 		content += fmt.Sprintf("  ║ %-*s║ %-*s║\n", 45, registerStr, 44, stackStr)
 	}

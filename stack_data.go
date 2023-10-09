@@ -123,8 +123,8 @@ func (d StackData) ToString() string {
 	case Nil:
 		stackStr = ""
 	}
-	if len(stackStr) > 20 {
-		stackStr = stackStr[:17] + "..."
+	if len(stackStr) > 35 {
+		stackStr = stackStr[:32] + "..."
 	}
 	return stackStr
 }
