@@ -8,10 +8,10 @@ go build .
 ## Run test program
 ./28z < pythag.28
 
-![](live.png)
-
 ## Run interactive
 ./28z
+
+![](live.png)
 
 # Usage
 All inputs should be separated by a newline (enter).
