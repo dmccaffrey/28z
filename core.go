@@ -62,18 +62,23 @@ func GraphPoint(x StackData, rb StackData, ram *Ram) (StackData, error) {
 }
 
 func RenderGraph(console *string, ram Ram) {
-	*console = ""
+	var sb strings.Builder
 	for r:=0; r<graphH; r++ {
 		for c:=0; c<graphW; c++ {
 			index := r * graphW + c
-			if ram[index] != 0 {
-				*console += "█"
+			if ram[index] == 2 {
+				sb.WriteString("\x1b[31m█\033[0m")
+
+			} else if ram[index] == 1 {
+				sb.WriteString("█")
+
 			} else {
-				*console += "░"
+				sb.WriteString("░")
 			}
 		}
-		*console += "\n"
+		sb.WriteString("\n")
 	}
+	*console = sb.String()
 }
 
 func Store(x StackData, y StackData, regs *Registers, ram *Ram) (StackData, error) {
