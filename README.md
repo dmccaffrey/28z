@@ -8,6 +8,8 @@ go build .
 ## Run test program
 ./28z < pythag.28
 
+![](live.png)
+
 ## Run interactive
 ./28z
 
