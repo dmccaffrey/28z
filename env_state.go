@@ -133,7 +133,12 @@ func (s *EnvState) Parse(input string) bool {
 		})
 	case 'e':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
-			lines := strings.Split(x.str, "|")
+			var lines []string
+			if strings.Contains(x.str, "_") {
+				lines = strings.Split(x.str, "_")
+			} else {
+				lines = strings.Split(x.str, "|")
+			}
 			for i := range(lines) {
 				s.Parse(lines[i])
 			}
