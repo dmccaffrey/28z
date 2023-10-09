@@ -212,7 +212,7 @@ type EnvState struct {
 }
 
 func (s EnvState) Display(instruction string) {
-	content := fmt.Sprintf("Current Instruction=%s\n", instruction)
+	content := fmt.Sprintf("Current Instruction=%s\n\n", instruction)
 	content += fmt.Sprintf("%s\t\t%*s\n", "Registers", 17, "Stack")
 	content += fmt.Sprintf("%s\t\t%s\n", strings.Repeat("-", 22), strings.Repeat("-", 22))
 	end := MaxStackLen-1
@@ -236,9 +236,7 @@ func (s *EnvState) Parse(input string) bool {
 	if len(input) == 0 {
 		return true
 	}
-
-	s.Display(input)
-
+	defer s.Display(input)
 	s.err = ""
 	if input == "exit" {
 		os.Exit(0)
@@ -482,38 +480,49 @@ type TermWriter struct {
 	interactive bool
 }
 
+func InteractiveTermWriter() TermWriter {
+	//out, size := AcquireTty()
+	return TermWriter{0, io.Writer(os.Stdout), windowSize{0,0}, true}
+}
+
+func DebugTermWriter() TermWriter {
+	return TermWriter{0, io.Writer(os.Stdout), windowSize{0,0}, false}
+}
+
 func (w *TermWriter) Publish(content string) {
-	var clear = fmt.Sprintf("%c[%dA%c[2K", 27, 1, 27)
-	_, _ = fmt.Fprint(w.output, strings.Repeat(clear, w.lastLineCount))
+	if w.interactive {
+		var clear = fmt.Sprintf("%c[%dA%c[2K", 27, 1, 27)
+		_, err := fmt.Fprint(w.output, strings.Repeat(clear, w.lastLineCount))
+		if err != nil {
+			fmt.Printf("Failed to reset output: err=%s", err.Error())
+		}
+	}
 
 	// +1 for the newlilne caused by input
 	w.lastLineCount = strings.Count(content, "\n") + 1
-	bytes := []byte(content)
-	w.output.Write(bytes)
+	fmt.Fprintf(w.output, "%s", content)
 }
 
-func (w *TermWriter) AcquireTty() {
+func AcquireTty() (io.Writer, windowSize) {
 	out, err := os.OpenFile("/dev/tty", os.O_WRONLY, 0)
 	if err != nil {
-		fmt.Fprintf(w.output, "Failed to acquire TTY")
-		return
+		fmt.Fprintf(os.Stdout, "Failed to acquire TTY")
+		return io.Writer(os.Stdout), windowSize{0,0}
 	}
-	w.output = io.Writer(out)
+	writer := io.Writer(out)
+	var winsize windowSize
 	_, _, _ = syscall.Syscall(syscall.SYS_IOCTL,
-		out.Fd(), uintptr(syscall.TIOCGWINSZ), uintptr(unsafe.Pointer(&w.winSize)))
-	fmt.Fprint(w.output, "\033[H\033[2J")
+		out.Fd(), uintptr(syscall.TIOCGWINSZ), uintptr(unsafe.Pointer(&winsize)))
+	fmt.Fprint(writer, "\033[H\033[2J")
+	return writer, winsize
 }
 
 func main() {
-	writer := TermWriter{0, io.Writer(os.Stdout), windowSize{0, 0}, true}
-	writer.AcquireTty()
-	state := NewEnvState(writer)
+	state := NewEnvState(DebugTermWriter())
+	//state := NewEnvState(InteractiveTermWriter())
 	state.Display("")
 	in := bufio.NewReader(os.Stdin)
 	for {
-		//fmt.Printf("%s", state.Display())
-		//writer.Publish(state.Display())
-		//fmt.Scanf("%s", &input)
 		input, err := in.ReadString('\n')
 		if err == io.EOF {
 			return
@@ -525,6 +534,7 @@ func main() {
 		if !state.Parse(input) {
 			break
 		}
+		state.Display(input)
 	}
 	state.Display("exit")
 }
