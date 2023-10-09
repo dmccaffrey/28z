@@ -2,6 +2,10 @@ package main
 
 import (
 	"math"
+	"path/filepath"
+	"os"
+	"strings"
+	"fmt"
 )
 
 const(
@@ -37,9 +41,27 @@ var constsMap = map[string]float64 {
 	"$maxf": math.MaxInt64,
 }
 
-var progsMap = map[string]string {
-	"MOD": "|?>|`;|;|\"RD|s|\"RD|r|;|\"RC|s|\"RC|r|\"RD|r|\"RC|r|/|i|*|-|",
-	"PYTHAG": "|2|^|;|2|^|+|1|2|/|^|",
-	"IN2MM": "|25.4|*",
-	"SEQR": "|1|;|/|;|1|;|/|+|1|;|/|",
+var progsMap = map[string]string {}
+
+
+func loadRom() {
+	err := filepath.Walk("rom/", func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		fmt.Printf("\nLoading: path=%s", path)
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		name := strings.Replace(path, "rom/", "", -1)
+		name = strings.Replace(name, ".28", "", -1)
+		prog := strings.Replace(string(data), "\n", "|", -1)
+		fmt.Printf("Loaded: name=%s, prog=%s", name, prog)
+		progsMap[name] = prog
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("\nFailed to read program: err=%s", err.Error())
+	}
 }
