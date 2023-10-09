@@ -43,6 +43,35 @@ var constsMap = map[string]float64 {
 
 var progsMap = map[string]string {}
 
+var uFuncs = map[string]UnaryFunc {
+	"@sin": func (x StackData) (StackData, error) {
+		x.flt = math.Sin(x.flt)
+		return x, nil
+	},
+		"@cos": func (x StackData) (StackData, error) {
+			x.flt = math.Cos(x.flt)
+			return x, nil
+		},
+		"@tan": func (x StackData) (StackData, error) {
+			x.flt = math.Tan(x.flt)
+			return x, nil
+		},
+		"@log": func (x StackData) (StackData, error) {
+			x.flt = math.Log10(x.flt)
+			return x, nil
+		},
+		"@ln": func (x StackData) (StackData, error) {
+			x.flt = math.Log(x.flt)
+			return x, nil
+		},
+		"@logb": func (x StackData) (StackData, error) {
+			x.flt = math.Logb(x.flt)
+			return x, nil
+		},
+}
+
+var bFuncs = map[string]BinaryFunc {
+}
 
 func loadRom() {
 	err := filepath.Walk("rom/", loadFile)
