@@ -37,8 +37,46 @@ var registerMap = map[string]int {
 	"RD": 3,
 }
 
+var constsMap = map[string]float64 {
+	"$pi": math.Pi,
+	"$tau": math.Pi * 2,
+	"$e": math.E,
+	"$phi": math.Phi,
+}
+
+
 type UnaryFunc func(x StackData) (StackData, error)
 type BinaryFunc func(x StackData, y StackData) (StackData, error)
+
+var uFuncs = map[string]UnaryFunc {
+	"@sin": func (x StackData) (StackData, error) {
+		x.flt = math.Sin(x.flt)
+		return x, nil
+	},
+	"@cos": func (x StackData) (StackData, error) {
+		x.flt = math.Cos(x.flt)
+		return x, nil
+	},
+	"@tan": func (x StackData) (StackData, error) {
+		x.flt = math.Tan(x.flt)
+		return x, nil
+	},
+	"@log": func (x StackData) (StackData, error) {
+		x.flt = math.Log10(x.flt)
+		return x, nil
+	},
+	"@ln": func (x StackData) (StackData, error) {
+		x.flt = math.Log(x.flt)
+		return x, nil
+	},
+	"@logb": func (x StackData) (StackData, error) {
+		x.flt = math.Logb(x.flt)
+		return x, nil
+	},
+}
+
+var bFuncs = map[string]BinaryFunc {
+}
 
 type StackData struct {
 	dataType byte
@@ -214,6 +252,26 @@ func (s *EnvState) Parse(input string) {
 		s.applyBinaryFunc(func(x StackData, y StackData) (StackData, error) {
 			return y.Pow(x)
 		})
+	case '`':
+		if s.regs[2].dataType == Flt && s.regs[2].flt == 1 {
+			s.Parse(input[1:])
+		}
+	case '@':
+		if len(input) < 3 {
+			s.err = "Invalid function"
+			return
+		}
+		if input[1] != 2 {
+			s.applyUnaryFunc(uFuncs[input])
+		} else if input[1] == '2' {
+			s.applyBinaryFunc(bFuncs[input])
+		}
+	case '$':
+		if len(input) < 2 {
+			s.err = "Invalid constant"
+			return
+		}
+		s.Push(StackData{Flt, "", constsMap[input]})
 	case 'd':
 		s.applyUnaryFunc(func(x StackData) (StackData, error) {
 			return DefaultStackData(), nil
@@ -257,6 +315,45 @@ func (s *EnvState) Parse(input string) {
 			s.console += x.ToString() + " "
 			return x, nil
 		})
+	case 'l':
+		for ; s.regs[1].flt>0; s.regs[1].flt-- {
+			s.Push(s.regs[0])
+			s.applyUnaryFunc(func(x StackData) (StackData, error) {
+				lines := strings.Split(x.str, "|")
+				for i := range(lines) {
+					s.Parse(lines[i])
+				}
+				return DefaultStackData(), nil
+			})
+		}
+	case '?':
+		if len(input) < 2 {
+			s.err = "Invalid comparison"
+			return
+		}
+		if len(s.stack) < 2 {
+			s.err = "Comparison requires two parameters"
+			return
+		}
+		x := s.stack[len(s.stack)-1]
+		y := s.stack[len(s.stack)-2]
+		res := 0.0
+		switch(input[1]) {
+		case '=':
+			if x.flt == y.flt {
+				res = 1.0
+			}
+		case '<':
+			if x.flt < y.flt {
+				res = 1.0
+			}
+		case '>':
+			if x.flt > y.flt {
+				res = 1.0
+			}
+		}
+		s.regs[2].dataType = Flt
+		s.regs[2].flt = res
 	case ';':
 		if len(s.stack) >= 2 {
 			x := s.Pop()
