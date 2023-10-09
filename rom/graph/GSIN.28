@@ -1,7 +1,7 @@
 $graphW
 "rb
 s
-"|"rb|r|$graphW|/|720|*|@sin|gp|d|
+" "rb r $graphW / 720 * @sin gp d 
 "ra
 s
 l
@@ -9,7 +9,7 @@ l
 $graphW
 "rb
 s
-"|"rb|r|$graphW|/|720|*|@cos|gp|d|
+" "rb r $graphW / 720 * @cos gp d 
 "ra
 s
 l

@@ -24,6 +24,10 @@ func (d *StackData) Parse(s string) error {
 	case 'q':
 		time.Sleep(3 * time.Second)
 		return nil
+	case '\'':
+		s = strings.TrimSuffix(s, "'")
+		s = strings.TrimPrefix(s, "'")
+		fallthrough
 	case '"':
 		s = strings.TrimSuffix(s, "\"")
 		s = strings.TrimPrefix(s, "\"")
