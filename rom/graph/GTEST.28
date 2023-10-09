@@ -4,7 +4,7 @@ $graphH
 *
 'rb
 s
-'10 @rand i 1 & 'rb r  s g
+'10 @rand i 1 & 'rb r  s
 'ra
 s
 l

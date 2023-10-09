@@ -9,7 +9,7 @@ import (
 
 type Instruction string
 
-type Parser func (instruction string) (bool)
+type Parser func (instruction string, userInput bool) (bool)
 
 func (d StackData) Eval(p Parser) error {
 	if d.dataType != Str {
@@ -20,7 +20,7 @@ func (d StackData) Eval(p Parser) error {
 		separator = "_"
 	}
 	for _,v := range strings.Split(d.str, separator) {
-		if !p(v) {
+		if !p(v, false) {
 			errors.New("Evaluation stopped due to errors")
 		}
 	}
