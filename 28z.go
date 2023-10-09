@@ -236,7 +236,6 @@ func (s *EnvState) Parse(input string) bool {
 	if len(input) == 0 {
 		return true
 	}
-	defer s.Display(input)
 	s.err = ""
 	if input == "exit" {
 		os.Exit(0)
@@ -335,7 +334,9 @@ func (s *EnvState) Parse(input string) bool {
 				if len(lines[i]) == 0 {
 					continue
 				}
-				if !s.Parse(lines[i]) {
+				res := s.Parse(lines[i])
+				s.Display(lines[i])
+				if !res {
 					return true
 				}
 			}
