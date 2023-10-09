@@ -116,3 +116,12 @@ func getInput() (string, error) {
 	input = strings.TrimSuffix(input, "\n")
 	return input, err
 }
+
+func debugLoop(s *EnvState) {
+	Display(*s, "debug", true)
+	input, _ := getInput()
+	for input != "exit" {
+		s.Parse(input, true)
+		input, _ = getInput()
+	}
+}
