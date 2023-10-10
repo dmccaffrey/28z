@@ -57,7 +57,7 @@ var instructionMap = map[string]Instruction{
 
 	"print":  {"Print x", 1, 0, print, "'Hello world ⤶ print ⤶ Hello world⥱Console"},
 	"render": {"Render RAM as buffer", 0, 0, render, ""},
-	"graph":  {"Graph a sequence", 1, 0, nil, ""},
+	"graph":  {"Graph a sequence", 3, 0, graph, ""},
 	"status": {"Display status", 0, 0, nil, ""},
 
 	"files": {"List availabel files in ROM", 0, 0, files, "files ⤶ [files]⥱Console"},
@@ -343,6 +343,22 @@ func render(core *Core) InstructionResult {
 		}
 		core.WriteLine(sb.String())
 	}
+	return successResult
+}
+
+func graph(core *Core) InstructionResult {
+	f := consumeOne(core)
+	end, start := consumeTwo(core)
+
+	step := 92 / (end.GetInt() - start.GetInt())
+	for r := 0; r < 92; r++ {
+		core.Push(FloatValue{value: float64(r * step)})
+		core.Push(f)
+		eval(core)
+		core.Ram[r+92*(consumeOne(core).GetInt()/32)] = 'x'
+
+	}
+	render(core)
 	return successResult
 }
 
