@@ -34,15 +34,17 @@ var instructionMap = map[string]Instruction{
 	"/":   {"Divide y by x", 2, 1, divide, "6 ⤶ 2 ⤶ / ⤶ ⤒3"},
 	"mod": {"y modulus by x", 2, 1, modulus, "6 ⤶ 2 ⤶ / ⤶ ⤒0"},
 
-	"{":    {"Define function", 1, 0, define, ""},
-	"}":    {"Reduce function", 0, 0, reduce, ""},
-	"<":    {"Define sequence", 0, 0, defineSequence, ""},
-	">":    {"Define sequence", 0, 0, reduceSequence, ""},
-	"this": {"Refer to the current sequence", 0, 1, this, ""},
-	"eval": {"Evaluate x", 1, 0, nil, ""},
+	"{":       {"Define function", 1, 0, define, ""},
+	"}":       {"Reduce function", 0, 0, reduce, ""},
+	"<":       {"Define sequence", 0, 0, defineSequence, ""},
+	">":       {"Define sequence", 0, 0, reduceSequence, ""},
+	"this":    {"Refer to the current sequence", 0, 1, this, ""},
+	"eval":    {"Evaluate x", 1, 0, nil, ""},
+	"consume": {"Pop from previous stack and push to current", 0, 1, consume, ""},
+	"produce": {"Pop from this stack and push to previous", 1, 0, produce, ""},
 
-	"enter": {"Enter function", 1, 0, enter, ""},
-	"end":   {"Return from function", 1, 0, end, ""},
+	"enter": {"Enter function", 0, 0, enter, ""},
+	"end":   {"Return from function", 0, 0, end, ""},
 
 	"store":    {"Store y into x", 2, 1, store, "2 ⤶ 'a ⤶ store ⤶ ⤒2; y⥗a"},
 	"put":      {"Put y into x", 2, 0, put, "2 ⤶ 'a ⤶ store ⤶ y⥗a"},
@@ -178,31 +180,12 @@ func reduce(core *Core) InstructionResult {
 }
 
 func enter(core *Core) InstructionResult {
-	argCount := consumeOne(core).GetInt()
-	if argCount > StackCount(core) {
-		return InstructionResult{true, "Not enough aguments"}
-	}
-	args := make([]CoreValue, argCount)
-	for i := argCount - 1; i >= 0; i-- {
-		args[i] = consumeOne(core)
-	}
 	core.NewStack()
-	for _, v := range args {
-		core.Push(v)
-	}
 	return successResult
 }
 
 func end(core *Core) InstructionResult {
-	resultCount := consumeOne(core).GetInt()
-	args := make([]CoreValue, resultCount)
-	for i := resultCount - 1; i >= 0; i-- {
-		args[i] = consumeOne(core)
-	}
 	core.DropStack()
-	for _, v := range args {
-		core.Push(v)
-	}
 	return successResult
 }
 
@@ -259,6 +242,26 @@ func eval(core *Core) InstructionResult {
 		}
 	}
 	currentSequence = lastSequence
+	return successResult
+}
+
+func consume(core *Core) InstructionResult {
+	if core.prevStack != nil {
+		x := core.prevStack.Pop()
+		if x != nil {
+			core.Push(*x)
+			return successResult
+		}
+		return InstructionResult{true, "Previous stack is empty"}
+	}
+	return InstructionResult{true, "No previous stack"}
+}
+
+func produce(core *Core) InstructionResult {
+	x := consumeOne(core)
+	if core.prevStack != nil {
+		core.prevStack.Push(x)
+	}
 	return successResult
 }
 

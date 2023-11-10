@@ -33,6 +33,7 @@ type (
 	Core             struct {
 		VarMap      map[string]CoreValue
 		stackStack  Stack[Stack[CoreValue]]
+		prevStack   *Stack[CoreValue]
 		Message     string
 		Mode        ExecutionMode
 		Console     []string
@@ -58,11 +59,18 @@ func (c *Core) currentStack() *Stack[CoreValue] {
 }
 
 func (c *Core) NewStack() {
+	c.prevStack = c.stackStack.Peek()
 	c.stackStack.Push(NewCoreValueStack())
 }
 
 func (c *Core) DropStack() {
 	c.stackStack.Pop()
+	if c.stackStack.top.prev != nil {
+		c.prevStack = &c.stackStack.top.prev.value
+
+	} else {
+		c.prevStack = nil
+	}
 }
 
 func (c *Core) ProcessRaw(input string) {
