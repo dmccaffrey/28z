@@ -34,8 +34,6 @@ var instructionMap = map[string]Instruction{
 	"/":   {"Divide y by x", 2, 1, divide, "6 ⤶ 2 ⤶ / ⤶ ⤒3"},
 	"mod": {"y modulus by x", 2, 1, modulus, "6 ⤶ 2 ⤶ / ⤶ ⤒0"},
 
-	"{":       {"Define function", 1, 0, define, ""},
-	"}":       {"Reduce function", 0, 0, reduce, ""},
 	"<":       {"Define sequence", 0, 0, defineSequence, ""},
 	">":       {"Define sequence", 0, 0, reduceSequence, ""},
 	"this":    {"Refer to the current sequence", 0, 1, this, ""},
@@ -158,25 +156,6 @@ func modulus(core *Core) InstructionResult {
 		return successResult
 	}
 	return InstructionResult{true, "Unexpected operands"}
-}
-
-func define(core *Core) InstructionResult {
-	argCount := consumeOne(core)
-	core.NewStack()
-	core.Push(argCount)
-	core.Push(StringValue{value: "enter"})
-	core.Mode = Storing
-	return successResult
-}
-
-func reduce(core *Core) InstructionResult {
-	if core.currentStack().length >= 2 && core.stackStack.length > 1 {
-		steps := core.currentStack().ToArray()
-		value := SequenceValue{value: steps}
-		core.DropStack()
-		core.Push(value)
-	}
-	return successResult
 }
 
 func enter(core *Core) InstructionResult {
