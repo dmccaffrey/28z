@@ -65,6 +65,9 @@ func (c *Core) NewStack() {
 
 func (c *Core) DropStack() {
 	c.stackStack.Pop()
+	if c.stackStack.top == nil {
+		c.NewStack()
+	}
 	if c.stackStack.top.prev != nil {
 		c.prevStack = &c.stackStack.top.prev.value
 
@@ -80,33 +83,56 @@ func (c *Core) ProcessRaw(input string) {
 		c.Mode = Running
 	}
 
+	value := RawToCoreValue(input)
+	if value.GetType() == DefaultType {
+		c.setError("Not a valid input")
+	}
+
+	if c.Mode == Storing {
+		c.Push(value)
+		return
+	}
+
+	if value.GetType() != InstructionType {
+		if value.GetType() == ReferenceType {
+			c.Push(value.(ReferenceValue).Dereference(c))
+
+		} else {
+			c.Push(value)
+		}
+		return
+	}
+	c.ProcessInstruction(value.(InstructionValue))
+
+}
+
+func RawToCoreValue(input string) CoreValue {
 	if len(input) > 1 {
 		if input[0] == '\'' {
 			input = strings.TrimPrefix(input, "'")
-			c.Push(StringValue{value: input})
-			return
+			return StringValue{value: input}
 		}
 		if input[0] == '$' {
 			input = strings.TrimPrefix(input, "$")
-			ref := ReferenceValue{value: input}
-			if c.Mode == Storing {
-				c.Push(ref)
-				return
-			}
-			c.Push(ref.Dereference(c))
-			return
+			return ReferenceValue{value: input}
 		}
 	}
+
 	result, err := strconv.ParseFloat(input, 64)
 	if err == nil {
-		c.Push(FloatValue{value: result})
-		return
+		return FloatValue{value: result}
 	}
-	c.ProcessInstruction(input)
+
+	instruction, ok := instructionMap[input]
+	if ok {
+		return InstructionValue{value: instruction}
+	}
+
+	return DefaultValue{}
 }
 
-func (c *Core) ProcessInstruction(instruction string) {
-	impl := instructionMap[instruction]
+func (c *Core) ProcessInstruction(instruction InstructionValue) {
+	impl := instruction.value
 	if !impl.IsValid() {
 		c.setError("Not a valid instruction")
 		return
@@ -130,9 +156,9 @@ func (c *Core) ProcessInstruction(instruction string) {
 
 func (c *Core) ProcessCoreValue(value CoreValue) {
 	if value.GetType() == StringType {
-		impl := instructionMap[value.GetString()]
-		if impl.IsValid() {
-			c.ProcessInstruction(value.GetString())
+		parsedValue := RawToCoreValue(value.GetString())
+		if parsedValue.GetType() == InstructionType {
+			c.ProcessInstruction(parsedValue.(InstructionValue))
 		}
 
 	} else {

@@ -351,7 +351,7 @@ func halt(core *Core) InstructionResult {
 
 func mmap(core *Core) InstructionResult {
 	x := consumeOne(core)
-	bytes := Rom[x.GetString()]
+	bytes := RawData[x.GetString()]
 	if bytes == nil {
 		return InstructionResult{true, "File not found"}
 	}
@@ -363,8 +363,11 @@ func mmap(core *Core) InstructionResult {
 }
 
 func files(core *Core) InstructionResult {
-	for k := range Rom {
-		core.WriteLine(k)
+	for k := range Programs {
+		core.WriteLine("Program: " + k)
+	}
+	for k := range RawData {
+		core.WriteLine("Data: " + k)
 	}
 	return successResult
 }

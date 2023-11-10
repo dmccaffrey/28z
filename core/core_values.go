@@ -146,6 +146,10 @@ func (r ReferenceValue) Dereference(core *Core) CoreValue {
 	if ok {
 		return variable
 	}
+	variable, ok = Programs[r.value]
+	if ok {
+		return variable
+	}
 	return DefaultValue{}
 }
 
