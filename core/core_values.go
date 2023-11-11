@@ -102,6 +102,10 @@ func (s SequenceValue) GetString() string {
 	for _, v := range s.value {
 		if v.GetType() == InstructionType {
 			sb.WriteString("%")
+
+		} else if v.GetType() == SequenceType {
+			sb.WriteString(fmt.Sprintf("[%d]", len(v.GetSequence())))
+
 		} else {
 			sb.WriteString(v.GetString())
 		}

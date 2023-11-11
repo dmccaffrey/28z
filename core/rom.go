@@ -47,13 +47,16 @@ func convertToSequence(offset int, inputs []string) (int, SequenceValue) {
 	values := []CoreValue{}
 	for ; offset < len(inputs); offset++ {
 		input := strings.TrimLeft(inputs[offset], " \t")
+		if input == "" {
+			continue
+		}
 		if input == "<" {
 			newOffset, value := convertToSequence(offset+1, inputs)
 			offset = newOffset
 			values = append([]CoreValue{value}, values...)
 
 		} else if input == ">" {
-			return offset + 1, SequenceValue{value: values}
+			return offset, SequenceValue{value: values}
 
 		} else {
 			value := RawToCoreValue(input)

@@ -11,18 +11,15 @@ func ceval(core *Core) InstructionResult {
 
 func eval(core *Core) InstructionResult {
 	x := consumeOne(core)
-	lastSequence := currentSequence
-	currentSequence = x.GetSequence()
-	end := len(x.GetSequence()) - 1
-	for i := range x.GetSequence() {
-		val := x.GetSequence()[end-i]
-		if val.GetType() != InstructionType {
-			if val.GetType() == ReferenceType {
-				val = val.(ReferenceValue).Dereference(core)
-			}
-			core.Push(val)
+	return _eval(x.GetSequence(), core)
+}
 
-		} else {
+func _eval(sequence []CoreValue, core *Core) InstructionResult {
+	end := len(sequence) - 1
+	for i := end; i >= 0; i-- {
+		val := sequence[i]
+		switch val.GetType() {
+		case InstructionType:
 			if !val.(InstructionValue).CheckArgs(core) {
 				return InstructionResult{true, "Too few arguments to instruction"}
 			}
@@ -30,9 +27,17 @@ func eval(core *Core) InstructionResult {
 			if result != successResult {
 				return result
 			}
+			break
+
+		case ReferenceType:
+			_eval(val.(ReferenceValue).Dereference(core).GetSequence(), core)
+			break
+
+		default:
+			core.Push(val)
+			break
 		}
 	}
-	currentSequence = lastSequence
 	return successResult
 }
 
@@ -48,5 +53,23 @@ func apply(core *Core) InstructionResult {
 	}
 	core.DropStack()
 	core.Push(SequenceValue{value: results})
+	return successResult
+}
+
+func reduce(core *Core) InstructionResult {
+	x, y := consumeTwo(core)
+	core.NewStack()
+	values := y.GetSequence()
+	offset := 1
+	lastResult := values[0]
+	for ; offset < len(values); offset++ {
+		core.Push(lastResult)
+		core.Push(values[offset])
+		core.Push(x)
+		eval(core)
+		lastResult = *core.Pop()
+	}
+	core.DropStack()
+	core.Push(lastResult)
 	return successResult
 }

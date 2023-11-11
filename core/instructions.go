@@ -39,6 +39,7 @@ var instructionMap = map[string]Instruction{
 	"consume":  {"Pop from previous stack and push to current", 0, 1, consume, ""},
 	"produce":  {"Pop from this stack and push to previous", 1, 0, produce, ""},
 	"apply":    {"Evalue x against all entries in y", 2, 1, apply, ""},
+	"reduce":   {"Use x to reduce y to a single value", 2, 1, reduce, ""},
 	"enter":    {"Enter function", 0, 0, enter, ""},
 	"end":      {"Return from function", 0, 0, end, ""},
 	"store":    {"Store y into x", 2, 1, store, "2 ⤶ 'a ⤶ store ⤶ ⤒2; y⥗a"},
