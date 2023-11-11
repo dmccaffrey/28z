@@ -199,10 +199,7 @@ func (c *Core) Pop() *CoreValue {
 }
 
 func (c *Core) ClearStack() {
-	for c.stackStack.length != 0 {
-		c.DropStack()
-	}
-	c.NewStack()
+	c.DropStack()
 }
 
 func (c *Core) GetStackArray() []CoreValue {
