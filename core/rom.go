@@ -31,11 +31,8 @@ func loadFile(path string, info os.FileInfo, err error) error {
 	if strings.HasSuffix(fileName, ".28") {
 		name = strings.Replace(name, ".28", "", -1)
 		inputs := strings.Split(string(data[:]), "\n")
-		values := make([]CoreValue, len(inputs))
-		for i, input := range inputs {
-			values[len(inputs)-i-1] = RawToCoreValue(input)
-		}
-		Programs[name] = SequenceValue{value: values}
+		_, result := convertToSequence(0, inputs)
+		Programs[name] = result
 		return nil
 	}
 
@@ -44,4 +41,24 @@ func loadFile(path string, info os.FileInfo, err error) error {
 	}
 
 	return nil
+}
+
+func convertToSequence(offset int, inputs []string) (int, SequenceValue) {
+	values := []CoreValue{}
+	for ; offset < len(inputs); offset++ {
+		input := strings.TrimLeft(inputs[offset], " \t")
+		if input == "<" {
+			newOffset, value := convertToSequence(offset+1, inputs)
+			offset = newOffset
+			values = append([]CoreValue{value}, values...)
+
+		} else if input == ">" {
+			return offset + 1, SequenceValue{value: values}
+
+		} else {
+			value := RawToCoreValue(input)
+			values = append([]CoreValue{value}, values...)
+		}
+	}
+	return offset, SequenceValue{value: values}
 }
