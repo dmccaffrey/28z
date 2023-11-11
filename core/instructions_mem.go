@@ -17,18 +17,18 @@ func put(core *Core) InstructionResult {
 
 func exchange(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
-	xVal := core.VarMap[x.GetString()]
+	xVal := Variables[x.GetString()]
 	if xVal == nil {
 		return InstructionResult{true, "Variable not set"}
 	}
-	core.VarMap[x.GetString()] = y
+	Variables[x.GetString()] = y
 	core.Push(xVal)
 	return successResult
 }
 
 func recall(core *Core) InstructionResult {
 	x := consumeOne(core)
-	val := core.VarMap[x.GetString()]
+	val := Variables[x.GetString()]
 	if val == nil {
 		return InstructionResult{true, "Variable not set"}
 	}
@@ -38,7 +38,7 @@ func recall(core *Core) InstructionResult {
 
 func purge(core *Core) InstructionResult {
 	x := consumeOne(core)
-	core.VarMap[x.GetString()] = nil
+	Variables[x.GetString()] = nil
 	return successResult
 }
 

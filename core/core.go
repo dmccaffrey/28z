@@ -31,7 +31,6 @@ type (
 	ExecutionMode    int
 	RegisterFunction func(*Core) int
 	Core             struct {
-		VarMap      map[string]CoreValue
 		stackStack  Stack[Stack[CoreValue]]
 		prevStack   *Stack[CoreValue]
 		Message     string
@@ -46,7 +45,6 @@ type (
 
 func NewCore() Core {
 	core := Core{}
-	core.VarMap = map[string]CoreValue{}
 	core.stackStack.Push(NewCoreValueStack())
 	core.Mode = Running
 	core.Console = make([]string, 0)
@@ -238,7 +236,7 @@ func (c *Core) Store(key CoreValue, value CoreValue) {
 		return
 	}
 	if key.GetType() == StringType {
-		c.VarMap[key.GetString()] = value
+		Variables[key.GetString()] = value
 		return
 	}
 	c.setError("Invalid key type")

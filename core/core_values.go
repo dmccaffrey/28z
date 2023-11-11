@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -97,9 +98,18 @@ func (s StringValue) GetType() CoreValueType {
 // Sequence
 func (s SequenceValue) GetString() string {
 	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("[%d]:", len(s.value)))
 	for _, v := range s.value {
-		sb.WriteString(v.GetString())
-		sb.WriteByte('|')
+		if v.GetType() == InstructionType {
+			sb.WriteString("%")
+		} else {
+			sb.WriteString(v.GetString())
+		}
+		sb.WriteByte(',')
+		if sb.Len() > 40 {
+			sb.WriteString("...")
+			break
+		}
 	}
 	return sb.String()
 }
@@ -142,7 +152,7 @@ func (r ReferenceValue) Dereference(core *Core) CoreValue {
 	if ok {
 		return FloatValue{value: float64(reg)}
 	}
-	variable, ok := core.VarMap[r.value]
+	variable, ok := Variables[r.value]
 	if ok {
 		return variable
 	}

@@ -65,3 +65,13 @@ func modulus(core *Core) InstructionResult {
 	}
 	return InstructionResult{true, "Unexpected operands"}
 }
+
+func inverse(core *Core) InstructionResult {
+	x := consumeOne(core)
+	val := x.GetFloat()
+	if val == 0 {
+		return InstructionResult{true, "Divide by zero"}
+	}
+	core.Push(FloatValue{value: 1 / val})
+	return successResult
+}

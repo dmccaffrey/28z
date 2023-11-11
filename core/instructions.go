@@ -31,6 +31,7 @@ var instructionMap = map[string]Instruction{
 	"*":        {"Multiply y by x", 2, 1, multiply, "6 ⤶ 2 ⤶ * ⤶ ⤒12"},
 	"/":        {"Divide y by x", 2, 1, divide, "6 ⤶ 2 ⤶ / ⤶ ⤒3"},
 	"mod":      {"y modulus by x", 2, 1, modulus, "6 ⤶ 2 ⤶ / ⤶ ⤒0"},
+	"inverse":  {"Inverts x", 1, 1, inverse, ""},
 	"<":        {"Define sequence", 0, 0, defineSequence, ""},
 	">":        {"Define sequence", 0, 0, reduceSequence, ""},
 	"this":     {"Refer to the current sequence", 0, 1, this, ""},
