@@ -1,6 +1,9 @@
 package core
 
 import (
+	"bytes"
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -8,9 +11,11 @@ import (
 
 var RawData map[string][]byte = make(map[string][]byte)
 var Programs map[string]SequenceValue = make(map[string]SequenceValue)
+var Symbols []rune = []rune{}
 
 func LoadRom() error {
 	err := filepath.Walk("rom/", loadFile)
+	loadSymbols()
 	return err
 }
 
@@ -41,6 +46,15 @@ func loadFile(path string, info os.FileInfo, err error) error {
 	}
 
 	return nil
+}
+
+func loadSymbols() {
+	raw, err := os.ReadFile("rom/symbols.set")
+	if err != nil {
+		log.Fatal("Could not read symbols")
+	}
+	Symbols = bytes.Runes(raw)
+	fmt.Printf("Symbols=%s", string(Symbols[:]))
 }
 
 func convertToSequence(offset int, inputs []string) (int, SequenceValue) {
