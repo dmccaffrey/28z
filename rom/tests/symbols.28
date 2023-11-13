@@ -1,0 +1,9 @@
+$render-bytes
+setloop
+<
+    $LOOPC
+    $LOOPC
+    put
+>
+loop
+render

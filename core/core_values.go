@@ -86,6 +86,10 @@ func (f FloatValue) GetType() CoreValueType {
 	return FloatType
 }
 
+func (f FloatValue) GetSequence() []CoreValue {
+	return []CoreValue{f}
+}
+
 // String
 func (s StringValue) GetString() string {
 	return s.value
@@ -93,6 +97,10 @@ func (s StringValue) GetString() string {
 
 func (s StringValue) GetType() CoreValueType {
 	return StringType
+}
+
+func (s StringValue) GetSequence() []CoreValue {
+	return []CoreValue{s}
 }
 
 // Sequence
@@ -142,6 +150,10 @@ func (s InstructionValue) CheckArgs(core *Core) bool {
 	return false
 }
 
+func (s InstructionValue) GetSequence() []CoreValue {
+	return []CoreValue{s}
+}
+
 func (s InstructionValue) Eval(core *Core) InstructionResult {
 	return s.value.impl(core)
 }
@@ -149,6 +161,10 @@ func (s InstructionValue) Eval(core *Core) InstructionResult {
 // Reference
 func (r ReferenceValue) GetType() CoreValueType {
 	return ReferenceType
+}
+
+func (r ReferenceValue) GetSequence() []CoreValue {
+	return []CoreValue{r}
 }
 
 func (r ReferenceValue) Dereference(core *Core) CoreValue {
