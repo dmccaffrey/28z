@@ -1,3 +1,3 @@
 module dmccaffrey/28z
 
-go 1.18
+go 1.21
