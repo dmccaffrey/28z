@@ -26,6 +26,7 @@ func NewInteractive28z() Interactive28z {
 func main() {
 	//enableDebug := flag.Bool("debug", false, "Enable debug output")
 	help := flag.Bool("help", false, "Output help documentation")
+	eval := flag.String("eval", "", "Specify a reference to evaluate on start")
 	flag.Parse()
 	if *help {
 		OutputHelpDocumentation()
@@ -42,6 +43,9 @@ func main() {
 
 	z := NewInteractive28z()
 	vm := core.NewCore()
+	if *eval != "" {
+		vm.ProcessRaw(*eval)
+	}
 	vm.Mainloop(&core.InteractiveHandler{Input: z.input, Output: z.output})
 }
 
