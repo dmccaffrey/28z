@@ -64,6 +64,7 @@ func Display(vm *core.Core) string {
 	sb.WriteString(uiS4)
 	sb.WriteString(uiIn)
 	sb.WriteString(uiS5)
-	sb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m > "))
+	sb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m [%s]> ", vm.Prompt))
+	vm.Prompt = ""
 	return sb.String()
 }

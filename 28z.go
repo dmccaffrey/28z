@@ -11,7 +11,17 @@ import (
 	"strings"
 )
 
-var reader *bufio.Reader = bufio.NewReader(os.Stdin)
+type Interactive28z struct {
+	reader *bufio.Reader
+	writer io.Writer
+}
+
+func NewInteractive28z() Interactive28z {
+	z := Interactive28z{}
+	z.reader = bufio.NewReader(os.Stdin)
+	z.writer = io.Writer(os.Stdout)
+	return z
+}
 
 func main() {
 	//enableDebug := flag.Bool("debug", false, "Enable debug output")
@@ -30,35 +40,27 @@ func main() {
 
 	core.InitializeInstructionMap()
 
+	z := NewInteractive28z()
 	vm := core.NewCore()
-	writer := io.Writer(os.Stdout)
+	vm.Mainloop(&core.InteractiveHandler{Input: z.input, Output: z.output})
+}
 
-	display(&vm, writer)
-	input, _ := getConsoleInput()
-	for input != "exit" {
-
-		vm.ProcessRaw(input)
-		fmt.Printf("msg=%s", vm.Message)
-		//stack := vm.GetStackString()
-		//fmt.Println(stack)
-		display(&vm, writer)
-		input, _ = getConsoleInput()
+func (z *Interactive28z) input(vm *core.Core) (bool, string) {
+	input, err := z.reader.ReadString('\n')
+	if err != nil {
+		vm.Message = "Failed to read input"
+		return true, ""
 	}
-}
-
-func getConsoleInput() (string, error) {
-	input, err := reader.ReadString('\n')
 	input = strings.TrimSuffix(input, "\n")
-	return input, err
+	if input == "exit" {
+		return false, ""
+	}
+	return true, input
 }
 
-func clearConsole() {
+func (z *Interactive28z) output(vm *core.Core) {
 	fmt.Print("\033[H\033[2J")
-}
-
-func display(vm *core.Core, writer io.Writer) {
-	clearConsole()
-	writer.Write([]byte(ui.Display(vm)))
+	z.writer.Write([]byte(ui.Display(vm)))
 }
 
 func OutputHelpDocumentation() {

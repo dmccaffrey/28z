@@ -100,3 +100,18 @@ func scale(value float64, min float64, max float64, bound int) int {
 func xyToOffset(x int, y int) int {
 	return y*92 + x
 }
+
+func prompt(core *Core) InstructionResult {
+	x := consumeOne(core)
+	core.Prompt = x.GetString()
+	core.interactiveHandler.Output(core)
+	valid, input := core.interactiveHandler.Input(core)
+	if valid {
+		value := RawToImmediateValue(input, core)
+		core.Push(value)
+
+	} else {
+		core.Push(DefaultValue{})
+	}
+	return successResult
+}

@@ -31,15 +31,21 @@ type (
 	ExecutionMode    int
 	RegisterFunction func(*Core) int
 	Core             struct {
-		stackStack  Stack[Stack[CoreValue]]
-		prevStack   *Stack[CoreValue]
-		Message     string
-		Mode        ExecutionMode
-		Console     []string
-		LastInput   string
-		Ram         []byte
-		loopCounter int
-		resultFlag  bool
+		stackStack         Stack[Stack[CoreValue]]
+		prevStack          *Stack[CoreValue]
+		Message            string
+		Mode               ExecutionMode
+		Console            []string
+		LastInput          string
+		Ram                []byte
+		loopCounter        int
+		resultFlag         bool
+		Prompt             string
+		interactiveHandler *InteractiveHandler
+	}
+	InteractiveHandler struct {
+		Input  func(*Core) (bool, string)
+		Output func(*Core)
 	}
 )
 
@@ -66,6 +72,7 @@ func (c *Core) DropStack() {
 	if c.stackStack.top == nil {
 		c.NewStack()
 	}
+
 	if c.stackStack.top.prev != nil {
 		c.prevStack = &c.stackStack.top.prev.value
 
@@ -77,6 +84,9 @@ func (c *Core) DropStack() {
 func (c *Core) ProcessRaw(input string) {
 	c.unsetError()
 	c.LastInput = input
+	if input == "" {
+		return
+	}
 	if input == "run" || input == ">" || input == "}" || input == ")" {
 		c.Mode = Running
 	}
@@ -103,6 +113,24 @@ func (c *Core) ProcessRaw(input string) {
 	}
 	c.ProcessInstruction(value.(InstructionValue))
 
+}
+
+func RawToImmediateValue(input string, core *Core) CoreValue {
+	if input[0] == '\'' {
+		input = strings.TrimPrefix(input, "'")
+		return StringValue{value: input}
+	}
+	if input[0] == '$' {
+		input = strings.TrimPrefix(input, "$")
+		return ReferenceValue{value: input}.Dereference(core)
+	}
+
+	result, err := strconv.ParseFloat(input, 64)
+	if err == nil {
+		return FloatValue{value: result}
+	}
+
+	return DefaultValue{}
 }
 
 func RawToCoreValue(input string, core *Core) CoreValue {
@@ -278,4 +306,18 @@ func (c *Core) GetResultFlag() bool {
 
 func (c *Core) SetResultFlag(result bool) {
 	c.resultFlag = result
+}
+
+func (c *Core) Mainloop(handler *InteractiveHandler) {
+	c.interactiveHandler = handler
+	handler.Output(c)
+	run := true
+	for run {
+		shouldContinue, input := handler.Input(c)
+		run = shouldContinue
+		if run {
+			c.ProcessRaw(input)
+			handler.Output(c)
+		}
+	}
 }

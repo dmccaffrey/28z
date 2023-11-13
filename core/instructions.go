@@ -57,6 +57,7 @@ var instructionMap = map[string]Instruction{
 	"print":    {"Print x", 1, 0, print, "'Hello world ⤶ print ⤶ Hello world⥱Console"},
 	"render":   {"Render RAM as buffer", 0, 0, render, "render ⤶"},
 	"graph":    {"Graph a sequence", 3, 0, graph, "graph ⤶"},
+	"prompt":   {"Prompt the user for a value", 1, 1, prompt, "'Enter x ⤶ prompt ⤶"},
 	"status":   {"Display status", 0, 0, nil, ""},
 	"files":    {"List availabel files in ROM", 0, 0, files, "files ⤶ [files]⥱Console"},
 	"mmap":     {"Map a file to RAM", 1, 0, mmap, "'rom/file.raw ⤶ mmap ⤶ file.byes⥱RAM"},
