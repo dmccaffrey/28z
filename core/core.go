@@ -116,6 +116,9 @@ func (c *Core) ProcessRaw(input string) {
 }
 
 func RawToImmediateValue(input string, core *Core) CoreValue {
+	if input == "" {
+		return DefaultValue{}
+	}
 	if input[0] == '\'' {
 		input = strings.TrimPrefix(input, "'")
 		return StringValue{value: input}

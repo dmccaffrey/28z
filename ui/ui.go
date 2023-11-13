@@ -27,6 +27,11 @@ var lastUiUpdate = time.Now().Local()
 
 func Display(vm *core.Core) string {
 	var sb strings.Builder
+
+	if vm.Prompt != "" {
+		sb.WriteString("\033[2m")
+	}
+
 	sb.WriteString(uiS0)
 	stack := vm.GetStackArray()
 	registerMap := vm.GetRegisterMap()
@@ -64,7 +69,14 @@ func Display(vm *core.Core) string {
 	sb.WriteString(uiS4)
 	sb.WriteString(uiIn)
 	sb.WriteString(uiS5)
-	sb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m [%s]> ", vm.Prompt))
+
+	prompt := " > "
+	if vm.Prompt != "" {
+		sb.WriteString("\033[0m")
+		prompt = fmt.Sprintf("\0331 | Requested input: %s > \0330", vm.Prompt)
+	}
+
+	sb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m %s", prompt))
 	vm.Prompt = ""
 	return sb.String()
 }
