@@ -1,6 +1,8 @@
 package core
 
 import (
+	"math"
+	"slices"
 	"strings"
 )
 
@@ -30,14 +32,48 @@ func graph(core *Core) InstructionResult {
 	f := consumeOne(core)
 	end, start := consumeTwo(core)
 
-	step := 92 / (end.GetInt() - start.GetInt())
-	for r := 0; r < 92; r++ {
-		core.Push(FloatValue{value: float64(r * step)})
-		core.Push(f)
-		eval(core)
-		core.Ram[r+92*(consumeOne(core).GetInt()/32)] = 'x'
-
+	results := make([]float64, 92)
+	step := (end.GetFloat() - start.GetFloat()) / 92
+	for col := 0; col < 92; col++ {
+		x := float64(col) * step
+		core.Push(FloatValue{value: float64(x)})
+		_eval(f.GetSequence(), core)
+		result := consumeOne(core)
+		results[col] = result.GetFloat()
 	}
+	min := slices.Min(results)
+	max := slices.Max(results)
+	if max == 0 {
+		max = 1
+	}
+	if min < 0 && max < 0 {
+		min = math.Abs(min)
+		max = math.Abs(max)
+	}
+	for col := 0; col < 92; col++ {
+		result := results[col]
+		row := scale(result, min, max, 31)
+		core.Ram[xyToOffset(col, row)] = 19
+
+		row = scale(0, min, max, 31)
+		core.Ram[xyToOffset(col, row)] = 8
+	}
+	core.Push(FloatValue{value: float64(min)})
+	core.Push(FloatValue{value: float64(max)})
 	render(core)
 	return successResult
+}
+
+func scale(value float64, min float64, max float64, bound int) int {
+	var scaled float64
+	if min >= 0 {
+		scaled = (value - min) / max
+	} else {
+		scaled = (value + math.Abs(min)) / (math.Abs(min) + max)
+	}
+	return bound - int(math.Round(scaled*float64(bound)))
+}
+
+func xyToOffset(x int, y int) int {
+	return y*92 + x
 }

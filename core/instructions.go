@@ -32,6 +32,8 @@ var instructionMap = map[string]Instruction{
 	"/":        {"Divide y by x", 2, 1, divide, "6 ⤶ 2 ⤶ / ⤶ ⤒3"},
 	"mod":      {"y modulus by x", 2, 1, modulus, "6 ⤶ 2 ⤶ / ⤶ ⤒0"},
 	"inverse":  {"Inverts x", 1, 1, inverse, ""},
+	"sin":      {"sin of x", 1, 1, sin, ""},
+	"cos":      {"cos of x", 1, 1, cos, ""},
 	"<":        {"Define sequence", 0, 0, defineSequence, "< ⤶"},
 	">":        {"Define sequence", 0, 0, reduceSequence, "> ⤶"},
 	"this":     {"Refer to the current sequence", 0, 1, this, "this ⤶"},
@@ -95,6 +97,9 @@ func repeat(core *Core) InstructionResult {
 }
 
 func consumeOne(core *Core) CoreValue {
+	if *&core.currentStack().length == 0 {
+		return DefaultValue{}
+	}
 	return *core.currentStack().Pop()
 }
 

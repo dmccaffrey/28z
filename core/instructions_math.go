@@ -1,5 +1,7 @@
 package core
 
+import "math"
+
 func add(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
 	if x.GetType() == FloatType {
@@ -73,5 +75,19 @@ func inverse(core *Core) InstructionResult {
 		return InstructionResult{true, "Divide by zero"}
 	}
 	core.Push(FloatValue{value: 1 / val})
+	return successResult
+}
+
+func sin(core *Core) InstructionResult {
+	x := consumeOne(core)
+	result := math.Sin(x.GetFloat())
+	core.Push(FloatValue{value: result})
+	return successResult
+}
+
+func cos(core *Core) InstructionResult {
+	x := consumeOne(core)
+	result := math.Cos(x.GetFloat())
+	core.Push(FloatValue{value: result})
 	return successResult
 }
