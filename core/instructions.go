@@ -61,6 +61,7 @@ var instructionMap = map[string]Instruction{
 	"status":   {"Display status", 0, 0, nil, ""},
 	"files":    {"List availabel files in ROM", 0, 0, files, "files ⤶ [files]⥱Console"},
 	"mmap":     {"Map a file to RAM", 1, 0, mmap, "'rom/file.raw ⤶ mmap ⤶ file.byes⥱RAM"},
+	"zero":     {"Zero RAM", 0, 0, zero, ""},
 	"repeat":   {"Execute x repeatedly", 4, 0, repeat, "0 ⤶ < ⤶'f ⤶ repeat ⤶"},
 	"<=":       {"Set the result flag to 1 if y <= x", 2, 0, lessThan, ""},
 	">=":       {"Set the result flag to 1 if y >= x", 2, 0, greaterThan, ""},

@@ -64,3 +64,10 @@ func files(core *Core) InstructionResult {
 	}
 	return successResult
 }
+
+func zero(core *Core) InstructionResult {
+	for i := range core.Ram {
+		core.Ram[i] = 0
+	}
+	return successResult
+}
