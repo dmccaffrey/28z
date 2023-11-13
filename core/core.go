@@ -81,9 +81,10 @@ func (c *Core) ProcessRaw(input string) {
 		c.Mode = Running
 	}
 
-	value := RawToCoreValue(input)
+	value := RawToCoreValue(input, c)
 	if value.GetType() == DefaultType {
 		c.setError("Not a valid input")
+		return
 	}
 
 	if c.Mode == Storing {
@@ -104,7 +105,7 @@ func (c *Core) ProcessRaw(input string) {
 
 }
 
-func RawToCoreValue(input string) CoreValue {
+func RawToCoreValue(input string, core *Core) CoreValue {
 	if len(input) > 1 {
 		if input[0] == '\'' {
 			input = strings.TrimPrefix(input, "'")
@@ -113,6 +114,15 @@ func RawToCoreValue(input string) CoreValue {
 		if input[0] == '$' {
 			input = strings.TrimPrefix(input, "$")
 			return ReferenceValue{value: input}
+		}
+		if input[0] == '%' {
+			input = strings.TrimPrefix(input, "%")
+			ref := ReferenceValue{value: input}
+			if core != nil {
+				_eval(ref.Dereference(core).GetSequence(), core)
+				return DefaultValue{}
+			}
+			return ref
 		}
 	}
 
@@ -154,7 +164,7 @@ func (c *Core) ProcessInstruction(instruction InstructionValue) {
 
 func (c *Core) ProcessCoreValue(value CoreValue) {
 	if value.GetType() == StringType {
-		parsedValue := RawToCoreValue(value.GetString())
+		parsedValue := RawToCoreValue(value.GetString(), c)
 		if parsedValue.GetType() == InstructionType {
 			c.ProcessInstruction(parsedValue.(InstructionValue))
 		}

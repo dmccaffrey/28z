@@ -22,6 +22,8 @@ Sequence values contain a sequence of instructions created dynamically through t
 ### Reference
 Reference values are identified by a preceeding dollar sign ($) and are replaced with the corresponding register or variable value either when input, or in storing mode when evaluated.
 
+References can also be specified with a preceeding percent sign (%) in interactive input to have the reference be resolved and immediately evaluated.
+
 ## Supported instructions
 
 ### !=

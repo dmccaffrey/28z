@@ -73,7 +73,7 @@ func convertToSequence(offset int, inputs []string) (int, SequenceValue) {
 			return offset, SequenceValue{value: values}
 
 		} else {
-			value := RawToCoreValue(input)
+			value := RawToCoreValue(input, nil)
 			values = append([]CoreValue{value}, values...)
 		}
 	}

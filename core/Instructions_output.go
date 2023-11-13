@@ -20,7 +20,7 @@ func render(core *Core) InstructionResult {
 	for r := 0; r < 30; r++ {
 		var sb strings.Builder
 		for c := 0; c < 92; c++ {
-			value := int(core.Ram[92*r+c]) % (len(Symbols) - 1)
+			value := int(core.Ram[92*r+c]) % (len(Symbols))
 			sb.WriteRune(Symbols[value])
 		}
 		core.WriteLine(sb.String())
