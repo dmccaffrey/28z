@@ -32,8 +32,28 @@ func graph(core *Core) InstructionResult {
 	f := consumeOne(core)
 	end, start := consumeTwo(core)
 
-	results := make([]float64, 92)
+	y := -1
 	step := (end.GetFloat() - start.GetFloat()) / 92
+	if start.GetFloat() < 0 && end.GetFloat() >= 0 {
+		span := end.GetFloat() + math.Abs(start.GetFloat())
+		step = span / 92
+		y = int(math.Round(math.Abs(start.GetFloat()) / step))
+
+	} else if start.GetFloat() < 0 && end.GetFloat() < 0 {
+		span := math.Abs(start.GetFloat()) + math.Abs(end.GetFloat())
+		step = span / 92
+	}
+
+	if y != -1.0 {
+		for row := 0; row < 32; row++ {
+			if core.Ram[xyToOffset(y, row)] == 0 {
+				core.Ram[xyToOffset(y, row)] = 2
+			}
+		}
+	}
+
+	results := make([]float64, 92)
+
 	for col := 0; col < 92; col++ {
 		x := float64(col) * step
 		core.Push(FloatValue{value: float64(x)})
@@ -56,7 +76,10 @@ func graph(core *Core) InstructionResult {
 		core.Ram[xyToOffset(col, row)] = 19
 
 		row = scale(0, min, max, 31)
-		core.Ram[xyToOffset(col, row)] = 8
+		offset := xyToOffset(col, row)
+		if core.Ram[offset] == 0 {
+			core.Ram[offset] = 8
+		}
 	}
 	core.Push(FloatValue{value: float64(min)})
 	core.Push(FloatValue{value: float64(max)})
