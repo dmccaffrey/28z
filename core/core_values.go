@@ -180,6 +180,7 @@ func (r ReferenceValue) Dereference(core *Core) CoreValue {
 	if ok {
 		return variable
 	}
+	Logger.Printf("Error: Failed to dreference reference: value=%s\n", r.value)
 	return DefaultValue{}
 }
 

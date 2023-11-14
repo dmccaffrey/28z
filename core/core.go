@@ -82,6 +82,7 @@ func (c *Core) DropStack() {
 }
 
 func (c *Core) ProcessRaw(input string) {
+	Logger.Printf("Processing raw input: input=%s\n", input)
 	c.unsetError()
 	c.LastInput = input
 	if input == "" {
@@ -93,29 +94,36 @@ func (c *Core) ProcessRaw(input string) {
 
 	value := RawToCoreValue(input, c)
 	if value.GetType() == DefaultType {
+		Logger.Printf("Error: Not a valid input: input=%s\n", input)
 		c.setError("Not a valid input")
 		return
 	}
 
 	if c.Mode == Storing {
+		Logger.Printf("Storing value: input=%s, value=%s\n", input, value)
 		c.Push(value)
 		return
 	}
 
 	if value.GetType() != InstructionType {
 		if value.GetType() == ReferenceType {
+			Logger.Printf("Parsed reference value: input=%s, value=%s\n", input, value)
 			c.Push(value.(ReferenceValue).Dereference(c))
+			Logger.Printf("Pushed reference value: input=%s, value=%s\n", input, value)
 
 		} else {
 			c.Push(value)
+			Logger.Printf("Pushed immediate value: input=%s, value=%s\n", input, value)
 		}
 		return
 	}
+	Logger.Printf("Parsed instruction: input=%s, value=%s\n", input, value)
 	c.ProcessInstruction(value.(InstructionValue))
 
 }
 
 func RawToImmediateValue(input string, core *Core) CoreValue {
+	Logger.Printf("Parsing raw to immediate: input=%s\n", input)
 	if input == "" {
 		return DefaultValue{}
 	}
@@ -133,10 +141,12 @@ func RawToImmediateValue(input string, core *Core) CoreValue {
 		return FloatValue{value: result}
 	}
 
+	Logger.Printf("Error Failed to parse raw to immediate: input=%s\n", input)
 	return DefaultValue{}
 }
 
 func RawToCoreValue(input string, core *Core) CoreValue {
+	Logger.Printf("Parsing raw to core: input=%s\n", input)
 	if len(input) > 1 {
 		if input[0] == '\'' {
 			input = strings.TrimPrefix(input, "'")
@@ -167,28 +177,36 @@ func RawToCoreValue(input string, core *Core) CoreValue {
 		return InstructionValue{value: instruction}
 	}
 
+	Logger.Printf("Error Failed to parse raw to core: input=%s\n", input)
 	return DefaultValue{}
 }
 
 func (c *Core) ProcessInstruction(instruction InstructionValue) {
+	Logger.Printf("Processing instruction: value=%s\n", instruction.value.description)
 	impl := instruction.value
 	if !impl.IsValid() {
+		Logger.Printf("Error: Instruction is not valid: value=%s", instruction.value.description)
 		c.setError("Not a valid instruction")
 		return
 	}
 
 	if c.Mode == Storing {
-		c.Push(InstructionValue{value: impl})
+		c.Push(instruction)
+		Logger.Printf("Pushed instruction: value=%s", instruction.value.description)
 		return
 	}
 
 	if impl.argCount > c.currentStack().Len() {
+		Logger.Printf("Error: Too few arguments for instruction: value=%s, have=%d, required=%d",
+			instruction.value.description, c.currentStack().Len(), instruction.value.argCount)
 		c.setError("Too few arguments")
 		return
 	}
 
+	Logger.Printf("Executing instruction: value=%s", instruction.value.description)
 	result := impl.impl(c)
 	if result.error {
+		Logger.Printf("Error: Error evaluating instruction: value=%s, err=%s", instruction.value.description, result.message)
 		c.setError(result.message)
 	}
 }

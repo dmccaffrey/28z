@@ -33,26 +33,35 @@ func main() {
 		return
 	}
 
+	core.LogToFile()
+
+	core.Logger.Printf("Initializing ROM\n")
 	err := core.LoadRom()
 	if err != nil {
 		fmt.Printf("Failed to load ROM: %s\n", err.Error())
 		return
 	}
 
+	core.Logger.Printf("Initializing instruction map\n")
 	core.InitializeInstructionMap()
 
 	z := NewInteractive28z()
+	core.Logger.Printf("Initializing core\n")
 	vm := core.NewCore()
+	core.Logger.Printf("Setting interactive handler\n")
 	vm.SetInteractiveHandler(&core.InteractiveHandler{Input: z.input, Output: z.output})
 	if *eval != "" {
+		core.Logger.Printf("Evaluating initial input: input=%s\n", *eval)
 		vm.ProcessRaw(*eval)
 	}
+	core.Logger.Printf("Starting main loop\n")
 	vm.Mainloop()
 }
 
 func (z *Interactive28z) input(vm *core.Core) (bool, string) {
 	input, err := z.reader.ReadString('\n')
 	if err != nil {
+		core.Logger.Printf("Error: Failed to read input\n")
 		vm.Message = "Failed to read input"
 		return true, ""
 	}

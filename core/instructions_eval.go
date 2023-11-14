@@ -16,10 +16,13 @@ func eval(core *Core) InstructionResult {
 
 func _eval(sequence []CoreValue, core *Core) InstructionResult {
 	end := len(sequence) - 1
+
+	Logger.Printf("Evaluating sequence: value=%s\n", sequence)
 	for i := end; i >= 0; i-- {
 		val := sequence[i]
 		switch val.GetType() {
 		case InstructionType:
+			Logger.Printf("Evaluating instruction: value=%s\n", val.GetString())
 			if !val.(InstructionValue).CheckArgs(core) {
 				return InstructionResult{true, "Too few arguments to instruction"}
 			}
@@ -30,10 +33,12 @@ func _eval(sequence []CoreValue, core *Core) InstructionResult {
 			break
 
 		case ReferenceType:
+			Logger.Printf("Dereferencing value: value=%s\n", val)
 			_eval(val.(ReferenceValue).Dereference(core).GetSequence(), core)
 			break
 
 		default:
+			Logger.Printf("Pushing value: value=%s\n", val)
 			core.Push(val)
 			break
 		}
