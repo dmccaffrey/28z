@@ -56,6 +56,19 @@ func apply(core *Core) InstructionResult {
 	return successResult
 }
 
+func stream(core *Core) InstructionResult {
+	x := consumeOne(core)
+	core.NewStack()
+	for i := 0; i < 2760; i++ {
+		core.Push(FloatValue{value: float64(core.Ram[i])})
+		core.Push(x)
+		eval(core)
+		core.Ram[i] = byte(consumeOne(core).GetFloat())
+	}
+	core.DropStack()
+	return successResult
+}
+
 func reduce(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
 	core.NewStack()

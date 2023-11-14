@@ -64,6 +64,7 @@ var instructionMap = map[string]Instruction{
 	"status":   {"Display status", 0, 0, nil, ""},
 	"files":    {"List availabel files in ROM", 0, 0, files, "files ⤶ [files]⥱Console"},
 	"mmap":     {"Map a file to RAM", 1, 0, mmap, "'rom/file.raw ⤶ mmap ⤶ file.byes⥱RAM"},
+	"stream":   {"Apply x to renderable RAM", 1, 0, stream, ""},
 	"zero":     {"Zero RAM", 0, 0, zero, ""},
 	"repeat":   {"Execute x repeatedly", 4, 0, repeat, "0 ⤶ < ⤶'f ⤶ repeat ⤶"},
 	"<=":       {"Set the result flag to 1 if y <= x", 2, 0, lessThan, ""},
@@ -77,6 +78,7 @@ var instructionMap = map[string]Instruction{
 	"loop":     {"Execute x if the loop counter is not zero", 0, 0, loopNotZero, "5 ⤶ setloop ⤶ ⤒<sequence> | loop ⤶"},
 	"halt":     {"Halt execution", 0, 0, halt, "halt ⤶"},
 	"sleep":    {"Sleep for x ms", 1, 0, sleep, ""},
+	"inspect":  {"Write a raw object to file", 1, 0, inspect, ""},
 }
 
 var currentSequence = []CoreValue{}

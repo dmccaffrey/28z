@@ -1,7 +1,9 @@
 package core
 
 import (
+	"fmt"
 	"math"
+	"os"
 	"slices"
 	"strings"
 	"time"
@@ -133,5 +135,12 @@ func prompt(core *Core) InstructionResult {
 	} else {
 		core.Push(DefaultValue{})
 	}
+	return successResult
+}
+
+func inspect(core *Core) InstructionResult {
+	x := consumeOne(core)
+	output := fmt.Sprintf("%s", x)
+	os.WriteFile("inspect", []byte(output), 0644)
 	return successResult
 }
