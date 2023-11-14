@@ -39,3 +39,8 @@ func notEquals(core *Core) InstructionResult {
 	}
 	return successResult
 }
+
+func unset(core *Core) InstructionResult {
+	core.SetResultFlag(false)
+	return successResult
+}

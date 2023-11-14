@@ -34,6 +34,7 @@ var instructionMap = map[string]Instruction{
 	"inverse":  {"Inverts x", 1, 1, inverse, ""},
 	"sin":      {"sin of x", 1, 1, sin, ""},
 	"cos":      {"cos of x", 1, 1, cos, ""},
+	"rand":     {"Generate random between 0 and 1", 0, 1, random, ""},
 	"<":        {"Define sequence", 0, 0, defineSequence, "< ⤶"},
 	">":        {"Define sequence", 0, 0, reduceSequence, "> ⤶"},
 	"this":     {"Refer to the current sequence", 0, 1, this, "this ⤶"},
@@ -55,7 +56,9 @@ var instructionMap = map[string]Instruction{
 	"collect":  {"Collect stack into x", 1, 1, collect, "1 ⤶ 2 ⤶ collect ⤶ ⤒[2]:1,2"},
 	"expand":   {"Expand x into the stack", 1, -1, expand, "⤒[2]:1,2 | expand ⤶ ⤒1 ⤒2"},
 	"print":    {"Print x", 1, 0, print, "'Hello world ⤶ print ⤶ Hello world⥱Console"},
+	"clearbuf": {"Clear the output buffer", 0, 0, clearBuffer, ""},
 	"render":   {"Render RAM as buffer", 0, 0, render, "render ⤶"},
+	"show":     {"Render and pause", 0, 0, show, ""},
 	"graph":    {"Graph a sequence", 3, 0, graph, "graph ⤶"},
 	"prompt":   {"Prompt the user for a value", 1, 1, prompt, "'Enter x ⤶ prompt ⤶"},
 	"status":   {"Display status", 0, 0, nil, ""},
@@ -67,11 +70,13 @@ var instructionMap = map[string]Instruction{
 	">=":       {"Set the result flag to 1 if y >= x", 2, 0, greaterThan, ""},
 	"==":       {"Set the result flag to 1 if x = y", 2, 0, equals, ""},
 	"!=":       {"Set the result flag to 1 if x != y", 2, 0, notEquals, ""},
+	"unset":    {"Sets the result flat to 0", 0, 0, unset, ""},
 	"ceval":    {"Conditionally evaluate x if result flag is 1", 1, 0, ceval, "⤒<sequence> | ceval ⤶"},
 	"setloop":  {"Set loop counter to x", 1, 0, setLoop, "5 ⤶ setloop ⤶"},
 	"dec":      {"Decrement the loop register", 0, 0, decrement, "dec"},
 	"loop":     {"Execute x if the loop counter is not zero", 0, 0, loopNotZero, "5 ⤶ setloop ⤶ ⤒<sequence> | loop ⤶"},
 	"halt":     {"Halt execution", 0, 0, halt, "halt ⤶"},
+	"sleep":    {"Sleep for x ms", 1, 0, sleep, ""},
 }
 
 var currentSequence = []CoreValue{}

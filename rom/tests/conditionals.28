@@ -1,0 +1,48 @@
+zero
+$render-bytes
+setloop
+<
+    0.98
+    rand
+    >=
+    <
+        5
+        $LOOPC
+        put
+        5
+        sleep
+    >
+    ceval
+    unset
+>
+loop
+show
+10
+setloop
+<
+    $LOOPC
+    $render-bytes
+    setloop
+    <
+        $LOOPC
+        recall
+        0
+        !=
+        <
+            $LOOPC
+            recall
+            1
+            +
+            $LOOPC
+            put
+            show
+            5
+            sleep
+        >
+        ceval
+        unset
+    >
+    loop
+    setloop
+>
+loop

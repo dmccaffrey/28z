@@ -311,16 +311,19 @@ func (c *Core) SetResultFlag(result bool) {
 	c.resultFlag = result
 }
 
-func (c *Core) Mainloop(handler *InteractiveHandler) {
+func (c *Core) SetInteractiveHandler(handler *InteractiveHandler) {
 	c.interactiveHandler = handler
-	handler.Output(c)
+}
+
+func (c *Core) Mainloop() {
+	c.interactiveHandler.Output(c)
 	run := true
 	for run {
-		shouldContinue, input := handler.Input(c)
+		shouldContinue, input := c.interactiveHandler.Input(c)
 		run = shouldContinue
 		if run {
 			c.ProcessRaw(input)
-			handler.Output(c)
+			c.interactiveHandler.Output(c)
 		}
 	}
 }

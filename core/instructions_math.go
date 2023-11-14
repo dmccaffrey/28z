@@ -1,6 +1,9 @@
 package core
 
-import "math"
+import (
+	"math"
+	"math/rand"
+)
 
 func add(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
@@ -89,5 +92,10 @@ func cos(core *Core) InstructionResult {
 	x := consumeOne(core)
 	result := math.Cos(x.GetFloat())
 	core.Push(FloatValue{value: result})
+	return successResult
+}
+
+func random(core *Core) InstructionResult {
+	core.Push(FloatValue{value: rand.Float64()})
 	return successResult
 }

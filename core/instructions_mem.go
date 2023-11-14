@@ -28,6 +28,10 @@ func exchange(core *Core) InstructionResult {
 
 func recall(core *Core) InstructionResult {
 	x := consumeOne(core)
+	if x.GetType() == FloatType && int(x.GetFloat()) < len(core.Ram) {
+		core.Push(FloatValue{value: float64(core.Ram[int(x.GetFloat())])})
+		return successResult
+	}
 	val := Variables[x.GetString()]
 	if val == nil {
 		return InstructionResult{true, "Variable not set"}

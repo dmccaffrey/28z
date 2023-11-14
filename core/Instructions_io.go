@@ -4,6 +4,7 @@ import (
 	"math"
 	"slices"
 	"strings"
+	"time"
 )
 
 func print(core *Core) InstructionResult {
@@ -12,6 +13,12 @@ func print(core *Core) InstructionResult {
 		x = x.(ReferenceValue).Dereference(core)
 	}
 	core.WriteLine(x.GetString())
+	core.interactiveHandler.Output(core)
+	return successResult
+}
+
+func clearBuffer(core *Core) InstructionResult {
+	core.ClearConsole()
 	return successResult
 }
 
@@ -25,6 +32,19 @@ func render(core *Core) InstructionResult {
 		}
 		core.WriteLine(sb.String())
 	}
+	return successResult
+}
+
+func show(core *Core) InstructionResult {
+	render(core)
+	core.interactiveHandler.Output(core)
+
+	return successResult
+}
+
+func sleep(core *Core) InstructionResult {
+	x := consumeOne(core)
+	time.Sleep(time.Duration(x.GetFloat()) * time.Millisecond)
 	return successResult
 }
 

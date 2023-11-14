@@ -43,10 +43,11 @@ func main() {
 
 	z := NewInteractive28z()
 	vm := core.NewCore()
+	vm.SetInteractiveHandler(&core.InteractiveHandler{Input: z.input, Output: z.output})
 	if *eval != "" {
 		vm.ProcessRaw(*eval)
 	}
-	vm.Mainloop(&core.InteractiveHandler{Input: z.input, Output: z.output})
+	vm.Mainloop()
 }
 
 func (z *Interactive28z) input(vm *core.Core) (bool, string) {
