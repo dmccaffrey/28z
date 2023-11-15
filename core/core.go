@@ -1,6 +1,8 @@
 package core
 
 import (
+	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -92,9 +94,9 @@ func (c *Core) ProcessRaw(input string) {
 		c.Mode = Running
 	}
 
-	value := RawToCoreValue(input, c)
-	if value.GetType() == DefaultType {
-		Logger.Printf("Error: Not a valid input: input=%s\n", input)
+	value, err := RawToCoreValue(input, c)
+	if value.GetType() == DefaultType && err != nil {
+		Logger.Printf("Error: Not a valid input: err=%s, input=%s\n", err.Error(), input)
 		c.setError("Not a valid input")
 		return
 	}
@@ -145,40 +147,43 @@ func RawToImmediateValue(input string, core *Core) CoreValue {
 	return DefaultValue{}
 }
 
-func RawToCoreValue(input string, core *Core) CoreValue {
+func RawToCoreValue(input string, core *Core) (CoreValue, error) {
 	Logger.Printf("Parsing raw to core: input=%s\n", input)
 	if len(input) > 1 {
 		if input[0] == '\'' {
 			input = strings.TrimPrefix(input, "'")
-			return StringValue{value: input}
+			return StringValue{value: input}, nil
 		}
 		if input[0] == '$' {
 			input = strings.TrimPrefix(input, "$")
-			return ReferenceValue{value: input}
+			return ReferenceValue{value: input}, nil
 		}
 		if input[0] == '%' {
 			input = strings.TrimPrefix(input, "%")
 			ref := ReferenceValue{value: input}
 			if core != nil {
-				_eval(ref.Dereference(core).GetSequence(), core)
-				return DefaultValue{}
+				result := _eval(ref.Dereference(core).GetSequence(), core)
+				if result.error {
+					return DefaultValue{}, errors.New(result.message)
+				}
+				return DefaultValue{}, nil
 			}
-			return ref
+			return ref, nil
 		}
 	}
 
 	result, err := strconv.ParseFloat(input, 64)
 	if err == nil {
-		return FloatValue{value: result}
+		return FloatValue{value: result}, nil
 	}
 
 	instruction, ok := instructionMap[input]
 	if ok {
-		return InstructionValue{value: instruction}
+		return InstructionValue{value: instruction}, nil
 	}
 
 	Logger.Printf("Error Failed to parse raw to core: input=%s\n", input)
-	return DefaultValue{}
+	return DefaultValue{}, errors.New(fmt.Sprintf("Unkown input %s", input))
 }
 
 func (c *Core) ProcessInstruction(instruction InstructionValue) {
@@ -213,7 +218,10 @@ func (c *Core) ProcessInstruction(instruction InstructionValue) {
 
 func (c *Core) ProcessCoreValue(value CoreValue) {
 	if value.GetType() == StringType {
-		parsedValue := RawToCoreValue(value.GetString(), c)
+		parsedValue, err := RawToCoreValue(value.GetString(), c)
+		if err != nil {
+			Logger.Printf("Error: could not convert raw to core value: err=%s, value=%s", value.GetString(), err.Error())
+		}
 		if parsedValue.GetType() == InstructionType {
 			c.ProcessInstruction(parsedValue.(InstructionValue))
 		}

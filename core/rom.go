@@ -73,7 +73,10 @@ func convertToSequence(offset int, inputs []string) (int, SequenceValue) {
 			return offset, SequenceValue{value: values}
 
 		} else {
-			value := RawToCoreValue(input, nil)
+			value, err := RawToCoreValue(input, nil)
+			if err != nil {
+				Logger.Printf("Error: sequence contains invalid value: offset=%d, inputs=%s...", offset, inputs[0])
+			}
 			values = append([]CoreValue{value}, values...)
 		}
 	}
