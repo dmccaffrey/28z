@@ -22,11 +22,19 @@ func greaterThan(core *Core) InstructionResult {
 
 func equals(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
+	if x.GetType() == StringType {
+		if x.GetString() == y.GetString() {
+			core.SetResultFlag(true)
+			return successResult
+		}
+		core.SetResultFlag(false)
+		return successResult
+	}
 	if x.GetFloat() == y.GetFloat() {
 		core.SetResultFlag(true)
-	} else {
-		core.SetResultFlag(false)
+		return successResult
 	}
+	core.SetResultFlag(false)
 	return successResult
 }
 

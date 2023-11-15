@@ -82,3 +82,10 @@ func expand(core *Core) InstructionResult {
 	}
 	return successResult
 }
+
+func duplicate(core *Core) InstructionResult {
+	x := consumeOne(core)
+	core.Push(x)
+	core.Push(x)
+	return successResult
+}

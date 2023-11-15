@@ -64,6 +64,9 @@ func convertToSequence(offset int, inputs []string) (int, SequenceValue) {
 		if input == "" {
 			continue
 		}
+		if input[0] == '#' {
+			continue
+		}
 		if input == "<" {
 			newOffset, value := convertToSequence(offset+1, inputs)
 			offset = newOffset

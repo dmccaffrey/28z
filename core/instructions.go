@@ -55,6 +55,7 @@ var instructionMap = map[string]Instruction{
 	"clear":    {"Clear stack", 0, 0, clear, "clear ⤶"},
 	"collect":  {"Collect stack into x", 1, 1, collect, "1 ⤶ 2 ⤶ collect ⤶ ⤒[2]:1,2"},
 	"expand":   {"Expand x into the stack", 1, -1, expand, "⤒[2]:1,2 | expand ⤶ ⤒1 ⤒2"},
+	"dup":      {"Duplicates x on the stack", 1, 2, duplicate, ""},
 	"print":    {"Print x", 1, 0, print, "'Hello world ⤶ print ⤶ Hello world⥱Console"},
 	"clearbuf": {"Clear the output buffer", 0, 0, clearBuffer, ""},
 	"render":   {"Render RAM as buffer", 0, 0, render, "render ⤶"},
