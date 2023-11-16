@@ -129,7 +129,7 @@ func prompt(core *Core) InstructionResult {
 	core.interactiveHandler.Output(core)
 	valid, input := core.interactiveHandler.Input(core)
 	if valid {
-		value := RawToImmediateValue(input, core)
+		value := RawToImmediateCoreValue(input)
 		core.Push(value)
 
 	} else {

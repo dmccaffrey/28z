@@ -84,9 +84,9 @@ func convertToSequence(offset int, inputs []string) (int, SequenceValue) {
 			return offset, SequenceValue{value: values}
 
 		} else {
-			value, err := RawToCoreValue(input, nil)
-			if err != nil {
-				Logger.Printf("Error: sequence contains invalid value: offset=%d, inputs=%s...", offset, inputs[0])
+			value := RawToCoreValue(input)
+			if value.GetType() == DefaultType {
+				panic(fmt.Sprintf("Invalid input: input=%s", input))
 			}
 			values = append([]CoreValue{value}, values...)
 		}
