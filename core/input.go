@@ -23,9 +23,21 @@ func RawToImmediateCoreValue(input string) CoreValue {
 		case '\'':
 			input = strings.TrimPrefix(input, "'")
 			return StringValue{value: input}
+
 		case '$':
 			input = strings.TrimPrefix(input, "$")
 			return ReferenceValue{value: input}
+
+		case '[':
+			input = strings.TrimPrefix(input, "[")
+			input = strings.TrimSuffix(input, "]")
+			entries := strings.Split(input, ",")
+			values := make([]CoreValue, len(entries))
+			for i, entry := range entries {
+				values[i] = RawToImmediateCoreValue(entry)
+			}
+			return SequenceValue{value: values}
+
 		case '%':
 			input = strings.TrimPrefix(input, "%")
 			ref := ReferenceValue{value: input}
