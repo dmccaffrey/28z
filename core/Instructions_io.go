@@ -78,7 +78,7 @@ func graph(core *Core) InstructionResult {
 	if y != -1.0 {
 		for row := 0; row < 32; row++ {
 			if core.Ram[xyToOffset(y, row)] == 0 {
-				core.Ram[xyToOffset(y, row)] = 2
+				core.Ram[xyToOffset(y, row)] = 2 | 128
 			}
 		}
 	}
@@ -104,12 +104,12 @@ func graph(core *Core) InstructionResult {
 	for col := 0; col < 92; col++ {
 		result := results[col]
 		row := scale(result, min, max, 31)
-		core.Ram[xyToOffset(col, row)] = 19
+		core.Ram[xyToOffset(col, row)] = 19 | 128
 
 		row = scale(0, min, max, 31)
 		offset := xyToOffset(col, row)
 		if core.Ram[offset] == 0 {
-			core.Ram[offset] = 8
+			core.Ram[offset] = 8 | 128
 		}
 	}
 	core.Push(FloatValue{value: float64(min)})
