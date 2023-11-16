@@ -22,6 +22,9 @@ func loopNotZero(core *Core) InstructionResult {
 	for core.loopCounter != 0 {
 		_eval(sequence, core)
 		decrement(core)
+		if core.ShouldBreak() {
+			break
+		}
 	}
 	return successResult
 }

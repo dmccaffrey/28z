@@ -42,6 +42,7 @@ type (
 		Ram                []byte
 		loopCounter        int
 		resultFlag         bool
+		breakFlag          bool
 		Prompt             string
 		interactiveHandler *InteractiveHandler
 	}
@@ -307,6 +308,12 @@ func (c *Core) Store(key CoreValue, value CoreValue) {
 		return
 	}
 	c.setError("Invalid key type")
+}
+
+func (c *Core) ShouldBreak() bool {
+	shouldBreak := c.breakFlag
+	c.breakFlag = false
+	return shouldBreak
 }
 
 func zeroFunc(core *Core) int {

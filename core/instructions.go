@@ -74,12 +74,14 @@ var instructionMap = map[string]Instruction{
 	"!=":       {"Set the result flag to 1 if x != y", 2, 0, notEquals, ""},
 	"unset":    {"Sets the result flat to 0", 0, 0, unset, ""},
 	"ceval":    {"Conditionally evaluate x if result flag is 1", 1, 0, ceval, "⤒<sequence> | ceval ⤶"},
+	"ceval2":   {"Conditionally evaluate y if result flag is 1, otherwise evaluate x", 2, 0, ceval2, "⤒<sequence>, ⤒<sequence> | ceval2 ⤶"},
 	"setloop":  {"Set loop counter to x", 1, 0, setLoop, "5 ⤶ setloop ⤶"},
 	"dec":      {"Decrement the loop register", 0, 0, decrement, "dec"},
 	"loop":     {"Execute x if the loop counter is not zero", 0, 0, loopNotZero, "5 ⤶ setloop ⤶ ⤒<sequence> | loop ⤶"},
 	"halt":     {"Halt execution", 0, 0, halt, "halt ⤶"},
 	"sleep":    {"Sleep for x ms", 1, 0, sleep, ""},
 	"inspect":  {"Write a raw object to file", 1, 0, inspect, ""},
+	"stop":     {"Stop the current loop", 0, 0, stop, ""},
 }
 
 var currentSequence = []CoreValue{}
@@ -103,6 +105,11 @@ func halt(core *Core) InstructionResult {
 }
 
 func repeat(core *Core) InstructionResult {
+	return successResult
+}
+
+func stop(core *Core) InstructionResult {
+	core.breakFlag = true
 	return successResult
 }
 

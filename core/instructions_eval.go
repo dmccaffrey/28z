@@ -9,6 +9,16 @@ func ceval(core *Core) InstructionResult {
 	return successResult
 }
 
+func ceval2(core *Core) InstructionResult {
+	x, y := consumeTwo(core)
+	if core.GetResultFlag() {
+		_eval(y.GetSequence(), core)
+	} else {
+		_eval(x.GetSequence(), core)
+	}
+	return successResult
+}
+
 func eval(core *Core) InstructionResult {
 	x := consumeOne(core)
 	return _eval(x.GetSequence(), core)

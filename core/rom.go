@@ -28,6 +28,7 @@ func loadFile(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 	name := strings.Replace(path, "rom/", "", -1)
+
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil
@@ -42,7 +43,14 @@ func loadFile(path string, info os.FileInfo, err error) error {
 	}
 
 	if strings.HasSuffix(fileName, ".raw") {
-		RawData[name] = data
+		n := 0
+		for _, val := range data {
+			if val != 10 {
+				data[n] = val - 32
+				n++
+			}
+		}
+		RawData[name] = []byte(data[:n])
 	}
 
 	return nil

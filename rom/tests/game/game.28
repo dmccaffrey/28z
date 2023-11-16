@@ -1,0 +1,121 @@
+'tests/game/bg.raw
+mmap
+
+# Initialize player position
+<
+    $render-bytes
+    rand
+    *
+    dup
+    recall
+    0
+    ==
+    <
+        'pc
+        put
+        break
+    >
+    <
+        drop
+    >
+    ceval2
+>
+100
+setloop
+loop
+
+# func DrawPc
+<
+    23
+    $pc
+    put
+>
+'fDrawPc
+put
+
+# func SetPc
+<
+    dup
+    recall
+    0
+    ==
+    <
+        'pc
+        put
+    >
+    <
+        drop
+    >
+    ceval2
+>
+'fSetPc
+put
+
+# Main loop
+<
+    # Update board
+    %fDrawPc
+    render
+
+    # Get move direction
+    'Direction?
+    prompt
+    'direction
+    put
+
+    # Erase previous position
+    0
+    $pc
+    put
+
+    # Move down
+    $direction
+    'd
+    ==
+    <
+        $pc
+        $render-width
+        +
+        %fSetPc
+    >
+    ceval
+
+    # Move right
+    $direction
+    'r
+    ==
+    <
+        $pc
+        1
+        +
+        %fSetPc
+    >
+    ceval
+
+    # Move left
+    $direction
+    'l
+    ==
+    <
+        $pc
+        1
+        -
+        %fSetPc
+    >
+    ceval
+
+    # Move up
+    $direction
+    'u
+    ==
+    <
+        $pc
+        $render-width
+        -
+        %fSetPc
+    >
+    ceval
+>
+-1
+setloop
+loop

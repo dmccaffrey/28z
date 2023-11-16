@@ -1,6 +1,8 @@
 package core
 
-import "math"
+import (
+	"math"
+)
 
 func store(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
@@ -54,7 +56,8 @@ func mmap(core *Core) InstructionResult {
 	}
 	len := int(math.Min(float64(len(bytes)), float64(len(core.Ram))))
 	for i := 0; i < len; i++ {
-		core.Ram[i] = bytes[i]
+		value := bytes[i] & byte(127)
+		core.Ram[i] = value
 	}
 	return successResult
 }
