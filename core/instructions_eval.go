@@ -44,12 +44,15 @@ func _eval(sequence []CoreValue, core *Core) InstructionResult {
 
 		case ReferenceType:
 			Logger.Printf("[%d] Dereferencing value: value=%s\n", i, val)
-			_eval(val.(ReferenceValue).Dereference(core).GetSequence(), core)
+			core.Push(val.(ReferenceValue).Dereference(core))
 			break
 
 		default:
 			Logger.Printf("[%d] Pushing value: value=%s\n", i, val)
 			core.Push(val)
+			break
+		}
+		if core.ShouldBreak() {
 			break
 		}
 	}
@@ -64,10 +67,31 @@ func apply(core *Core) InstructionResult {
 		core.Push(value)
 		core.Push(x)
 		eval(core)
-		results[i] = *core.Pop()
+		result := core.Pop()
+		if result != nil {
+			results[i] = *result
+		} else {
+			results[i] = DefaultValue{}
+			Logger.Printf("Error: no result during apply")
+		}
 	}
 	core.DropStack()
 	core.Push(SequenceValue{value: results})
+	return successResult
+}
+
+func each(core *Core) InstructionResult {
+	x, y := consumeTwo(core)
+	core.NewStack()
+	for i, value := range y.GetSequence() {
+		core.Push(FloatValue{value: float64(i)})
+		core.Push(value)
+		_eval(x.GetSequence(), core)
+		if core.ShouldBreak() {
+			break
+		}
+	}
+	core.DropStack()
 	return successResult
 }
 
@@ -78,7 +102,9 @@ func stream(core *Core) InstructionResult {
 		core.Push(FloatValue{value: float64(core.Ram[i])})
 		core.Push(x)
 		eval(core)
-		core.Ram[i] = byte(consumeOne(core).GetFloat())
+		if core.ShouldBreak() {
+			break
+		}
 	}
 	core.DropStack()
 	return successResult

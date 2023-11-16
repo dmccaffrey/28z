@@ -123,6 +123,7 @@ func (c *Core) ProcessRaw(input string) {
 			Logger.Printf("Error: Failed to eval sequence: err=%s, seq=%s", result.message, value)
 			return
 		}
+		return
 	}
 
 	c.Push(value)
@@ -222,17 +223,20 @@ func (c *Core) GetMode() string {
 
 func (c *Core) Store(key CoreValue, value CoreValue) {
 	if key.GetType() == FloatType {
-		if key.GetInt() >= len(c.Ram) {
+		index := key.GetInt()
+		if index < 0 || index >= len(c.Ram) {
+			Logger.Printf("Error: store out of range for RAM: index=%d", index)
 			c.setError("RAM offset too large")
 			return
 		}
-		c.Ram[key.GetInt()] = byte(value.GetInt())
+		c.Ram[index] = byte(value.GetInt())
 		return
 	}
 	if key.GetType() == StringType {
 		Variables[key.GetString()] = value
 		return
 	}
+	Logger.Printf("Invalid key type: %s", key)
 	c.setError("Invalid key type")
 }
 

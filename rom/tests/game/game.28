@@ -1,4 +1,4 @@
-'tests/game/bg.raw
+'tests/game/bg.sym
 mmap
 
 # Initialize player position
@@ -27,6 +27,8 @@ loop
 # func DrawPc
 <
     23
+    128
+    +
     $pc
     put
 >

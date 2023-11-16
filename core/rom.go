@@ -42,11 +42,23 @@ func loadFile(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
+	if strings.HasSuffix(fileName, ".sym") {
+		n := 0
+		for _, val := range data {
+			if val != 10 {
+				adjusted := (val - 32) | 128
+				data[n] = adjusted
+				n++
+			}
+		}
+		RawData[name] = []byte(data[:n])
+	}
+
 	if strings.HasSuffix(fileName, ".raw") {
 		n := 0
 		for _, val := range data {
 			if val != 10 {
-				data[n] = val - 32
+				data[n] = val
 				n++
 			}
 		}

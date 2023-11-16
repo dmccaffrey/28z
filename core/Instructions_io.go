@@ -29,8 +29,17 @@ func render(core *Core) InstructionResult {
 	for r := 0; r < 30; r++ {
 		var sb strings.Builder
 		for c := 0; c < 92; c++ {
-			value := int(core.Ram[92*r+c]) % (len(Symbols))
-			sb.WriteRune(Symbols[value])
+			value := int(core.Ram[92*r+c])
+			if value >= 128 {
+				value = (value & 127) % len(Symbols)
+				sb.WriteRune(Symbols[value])
+
+			} else {
+				if value < 32 {
+					value = 32
+				}
+				sb.WriteRune(rune(value))
+			}
 		}
 		core.WriteLine(sb.String())
 	}

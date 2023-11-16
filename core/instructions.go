@@ -27,6 +27,7 @@ func (i *Instruction) IsValid() bool {
 
 var instructionMap = map[string]Instruction{
 	"+":        {"Add x and y", 2, 1, add, "6 ⤶ 2 ⤶ + ⤶ ⤒8"},
+	"v+":       {"Addition for all permuations of x and y", 2, 1, vplus, ""},
 	"-":        {"Subtract x from y", 2, 1, subtract, "6 ⤶ 2 ⤶ - ⤶ ⤒4"},
 	"*":        {"Multiply y by x", 2, 1, multiply, "6 ⤶ 2 ⤶ * ⤶ ⤒12"},
 	"/":        {"Divide y by x", 2, 1, divide, "6 ⤶ 2 ⤶ / ⤶ ⤒3"},
@@ -41,7 +42,8 @@ var instructionMap = map[string]Instruction{
 	"eval":     {"Evaluate x", 1, 0, nil, ""},
 	"consume":  {"Pop from previous stack and push to current", 0, 1, consume, "consume ⤶"},
 	"produce":  {"Pop from this stack and push to previous", 1, 0, produce, "produce ⤶"},
-	"apply":    {"Evalue x against all entries in y", 2, 1, apply, "apply ⤶"},
+	"apply":    {"Evalue x against all entries in y to modify y", 2, 1, apply, "apply ⤶"},
+	"each":     {"Evaluate x against all entries in y", 2, 0, each, ""},
 	"reduce":   {"Use x to reduce y to a single value", 2, 1, reduce, "reduce ⤶"},
 	"enter":    {"Enter function", 0, 0, enter, "enter ⤶"},
 	"end":      {"Return from function", 0, 0, end, "end ⤶"},

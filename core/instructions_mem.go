@@ -56,7 +56,7 @@ func mmap(core *Core) InstructionResult {
 	}
 	len := int(math.Min(float64(len(bytes)), float64(len(core.Ram))))
 	for i := 0; i < len; i++ {
-		value := bytes[i] & byte(127)
+		value := bytes[i]
 		core.Ram[i] = value
 	}
 	return successResult
