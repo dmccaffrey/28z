@@ -2,12 +2,12 @@ package core
 
 func setLoop(core *Core) InstructionResult {
 	x := consumeOne(core)
-	core.loopCounter = x.GetInt()
+	core.Regs.LoopCounter = int16(x.GetInt())
 	return successResult
 }
 
 func decrement(core *Core) InstructionResult {
-	core.loopCounter -= 1
+	core.Regs.LoopCounter -= 1
 	return successResult
 }
 
@@ -19,7 +19,7 @@ func loopNotZero(core *Core) InstructionResult {
 	} else {
 		sequence = x.(SequenceValue).value
 	}
-	for core.loopCounter != 0 {
+	for core.Regs.LoopCounter != 0 {
 		_eval(sequence, core)
 		decrement(core)
 		if core.ShouldBreak() {

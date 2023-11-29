@@ -3,9 +3,9 @@ package core
 func lessThan(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
 	if x.GetFloat() <= y.GetFloat() {
-		core.SetResultFlag(true)
+		core.Regs.State.ResultFlag = true
 	} else {
-		core.SetResultFlag(false)
+		core.Regs.State.ResultFlag = false
 	}
 	return successResult
 }
@@ -13,9 +13,9 @@ func lessThan(core *Core) InstructionResult {
 func greaterThan(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
 	if x.GetFloat() >= y.GetFloat() {
-		core.SetResultFlag(true)
+		core.Regs.State.ResultFlag = true
 	} else {
-		core.SetResultFlag(false)
+		core.Regs.State.ResultFlag = false
 	}
 	return successResult
 }
@@ -24,31 +24,31 @@ func equals(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
 	if x.GetType() == StringType {
 		if x.GetString() == y.GetString() {
-			core.SetResultFlag(true)
+			core.Regs.State.ResultFlag = true
 			return successResult
 		}
-		core.SetResultFlag(false)
+		core.Regs.State.ResultFlag = false
 		return successResult
 	}
 	if x.GetFloat() == y.GetFloat() {
-		core.SetResultFlag(true)
+		core.Regs.State.ResultFlag = true
 		return successResult
 	}
-	core.SetResultFlag(false)
+	core.Regs.State.ResultFlag = false
 	return successResult
 }
 
 func notEquals(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
 	if x.GetFloat() != y.GetFloat() {
-		core.SetResultFlag(true)
+		core.Regs.State.ResultFlag = true
 	} else {
-		core.SetResultFlag(false)
+		core.Regs.State.ResultFlag = false
 	}
 	return successResult
 }
 
 func unset(core *Core) InstructionResult {
-	core.SetResultFlag(false)
+	core.Regs.State.ResultFlag = false
 	return successResult
 }

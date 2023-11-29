@@ -14,18 +14,18 @@ func print(core *Core) InstructionResult {
 	if x.GetType() == ReferenceType {
 		x = x.(ReferenceValue).Dereference(core)
 	}
-	core.WriteLine(x.GetString())
-	core.interactiveHandler.Output(core)
+	core.interactiveHandler.Output(x.GetString())
+	core.interactiveHandler.Display(core)
 	return successResult
 }
 
 func clearBuffer(core *Core) InstructionResult {
-	core.ClearConsole()
+	core.interactiveHandler.Clear()
 	return successResult
 }
 
 func render(core *Core) InstructionResult {
-	core.ClearConsole()
+	core.interactiveHandler.Clear()
 	for r := 0; r < 30; r++ {
 		var sb strings.Builder
 		for c := 0; c < 92; c++ {
@@ -41,14 +41,14 @@ func render(core *Core) InstructionResult {
 				sb.WriteRune(rune(value))
 			}
 		}
-		core.WriteLine(sb.String())
+		core.interactiveHandler.Output(sb.String())
 	}
 	return successResult
 }
 
 func show(core *Core) InstructionResult {
 	render(core)
-	core.interactiveHandler.Output(core)
+	core.interactiveHandler.Display(core)
 
 	return successResult
 }
@@ -134,9 +134,7 @@ func xyToOffset(x int, y int) int {
 
 func prompt(core *Core) InstructionResult {
 	x := consumeOne(core)
-	core.Prompt = x.GetString()
-	core.interactiveHandler.Output(core)
-	valid, input := core.interactiveHandler.Input(core)
+	valid, input := core.interactiveHandler.Prompt(core, x.GetString())
 	if valid {
 		value := RawToImmediateCoreValue(input)
 		core.Push(value)

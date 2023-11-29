@@ -102,7 +102,7 @@ func OutputInstructionHelpDoc() {
 }
 
 func halt(core *Core) InstructionResult {
-	core.Mode = Halted
+	core.Regs.Mode = Halted
 	return successResult
 }
 
@@ -111,7 +111,7 @@ func repeat(core *Core) InstructionResult {
 }
 
 func stop(core *Core) InstructionResult {
-	core.breakFlag = true
+	core.Regs.State.BreakFlag = true
 	return successResult
 }
 

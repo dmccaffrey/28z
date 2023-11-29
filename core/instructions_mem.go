@@ -64,10 +64,10 @@ func mmap(core *Core) InstructionResult {
 
 func files(core *Core) InstructionResult {
 	for k := range Programs {
-		core.WriteLine("Program: " + k)
+		core.interactiveHandler.Output("Program: " + k)
 	}
 	for k := range RawData {
-		core.WriteLine("Data: " + k)
+		core.interactiveHandler.Output("Data: " + k)
 	}
 	return successResult
 }

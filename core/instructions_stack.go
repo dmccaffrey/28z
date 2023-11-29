@@ -12,7 +12,7 @@ func end(core *Core) InstructionResult {
 
 func defineSequence(core *Core) InstructionResult {
 	core.NewStack()
-	core.Mode = Storing
+	core.Regs.Mode = Storing
 	return successResult
 }
 
@@ -20,7 +20,7 @@ func reduceSequence(core *Core) InstructionResult {
 	steps := core.currentStack().ToArray()
 	value := SequenceValue{value: steps}
 	core.DropStack()
-	core.Mode = Running
+	core.Regs.Mode = Running
 	core.Push(value)
 	return successResult
 }

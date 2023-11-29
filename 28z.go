@@ -1,27 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"dmccaffrey/28z/core"
 	"dmccaffrey/28z/ui"
 	"flag"
 	"fmt"
-	"io"
-	"os"
-	"strings"
 )
-
-type Interactive28z struct {
-	reader *bufio.Reader
-	writer io.Writer
-}
-
-func NewInteractive28z() Interactive28z {
-	z := Interactive28z{}
-	z.reader = bufio.NewReader(os.Stdin)
-	z.writer = io.Writer(os.Stdout)
-	return z
-}
 
 func main() {
 	//enableDebug := flag.Bool("debug", false, "Enable debug output")
@@ -45,36 +29,17 @@ func main() {
 	core.Logger.Printf("Initializing instruction map\n")
 	core.InitializeInstructionMap()
 
-	z := NewInteractive28z()
+	z := ui.NewInteractive28z()
 	core.Logger.Printf("Initializing core\n")
 	vm := core.NewCore()
 	core.Logger.Printf("Setting interactive handler\n")
-	vm.SetInteractiveHandler(&core.InteractiveHandler{Input: z.input, Output: z.output})
+	vm.SetInteractiveHandler(&z)
 	if *eval != "" {
 		core.Logger.Printf("Evaluating initial input: input=%s\n", *eval)
 		vm.ProcessRaw(*eval)
 	}
 	core.Logger.Printf("Starting main loop\n")
 	vm.Mainloop()
-}
-
-func (z *Interactive28z) input(vm *core.Core) (bool, string) {
-	input, err := z.reader.ReadString('\n')
-	if err != nil {
-		core.Logger.Printf("Error: Failed to read input\n")
-		vm.Message = "Failed to read input"
-		return true, ""
-	}
-	input = strings.TrimSuffix(input, "\n")
-	if input == "exit" {
-		return false, ""
-	}
-	return true, input
-}
-
-func (z *Interactive28z) output(vm *core.Core) {
-	fmt.Print("\033[H\033[2J")
-	z.writer.Write([]byte(ui.Display(vm)))
 }
 
 func OutputHelpDocumentation() {

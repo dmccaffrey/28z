@@ -1,9 +1,9 @@
 package core
 
 const (
-	Running ExecutionMode = 1000
-	Storing               = 2000
-	Halted                = 3000
+	Running ExecutionMode = 1
+	Storing               = 2
+	Halted                = 3
 )
 
 const (
@@ -14,42 +14,43 @@ const (
 	Reg_Count        = "COUNT"
 )
 
-var ModeNameMap = map[ExecutionMode]string{
-	Running: "Running",
-	Storing: "Storing",
-	Halted:  "Halted",
-}
 var boolToI = map[bool]int{false: 0, true: 1}
 var RegisterKeys = []string{Reg_Count, Reg_Depth, Reg_State, Reg_Flags, Reg_LoopC}
 
 type (
-	ExecutionMode    int
+	ExecutionMode    int8
 	RegisterFunction func(*Core) int
 	Core             struct {
 		stackStack         Stack[Stack[CoreValue]]
 		prevStack          *Stack[CoreValue]
-		Message            string
-		Mode               ExecutionMode
-		Console            []string
-		LastInput          string
 		Ram                []byte
-		loopCounter        int
-		resultFlag         bool
-		breakFlag          bool
-		Prompt             string
-		interactiveHandler *InteractiveHandler
+		Regs               Registers
+		Error              CoreValue
+		interactiveHandler InteractiveHandler
 	}
-	InteractiveHandler struct {
-		Input  func(*Core) (bool, string)
-		Output func(*Core)
+	InteractiveHandler interface {
+		GetInput(*Core) (bool, string)
+		Display(*Core)
+		Output(string)
+		Prompt(*Core, string) (bool, string)
+		Clear()
+	}
+	Registers struct {
+		State       StateRegister
+		Mode        ExecutionMode
+		LoopCounter int16
+	}
+	StateRegister struct {
+		ResultFlag bool
+		BreakFlag  bool
+		PromptFlag bool
 	}
 )
 
 func NewCore() Core {
 	core := Core{}
 	core.stackStack.Push(NewCoreValueStack())
-	core.Mode = Running
-	core.Console = make([]string, 0)
+	core.Regs.Mode = Running
 	core.Ram = make([]byte, 8192)
 	return core
 }
@@ -80,13 +81,12 @@ func (c *Core) DropStack() {
 func (c *Core) ProcessRaw(input string) {
 	Logger.Printf("Processing raw input: input=%s\n", input)
 	c.unsetError()
-	c.LastInput = input
 	if input == "" {
 		Logger.Printf("Error: Empty input provided")
 		return
 	}
 	if input == "run" || input == ">" {
-		c.Mode = Running
+		c.Regs.Mode = Running
 	}
 
 	runReference := false
@@ -107,7 +107,7 @@ func (c *Core) ProcessRaw(input string) {
 		return
 	}
 
-	if c.Mode == Storing {
+	if c.Regs.Mode == Storing {
 		Logger.Printf("Storing value: input=%s, value=%s\n", input, value)
 		c.Push(value)
 		return
@@ -138,7 +138,7 @@ func (c *Core) ProcessInstruction(instruction InstructionValue) {
 		return
 	}
 
-	if c.Mode == Storing {
+	if c.Regs.Mode == Storing {
 		c.Push(instruction)
 		Logger.Printf("Pushed instruction: value=%s", instruction.value.description)
 		return
@@ -160,12 +160,12 @@ func (c *Core) ProcessInstruction(instruction InstructionValue) {
 }
 
 func (c *Core) setError(error string) {
-	c.Message = error
-	c.Mode = Halted
+	c.Error = StringValue{value: error}
+	c.Regs.Mode = Halted
 }
 
 func (c *Core) unsetError() {
-	c.Message = "OK"
+	c.Error = DefaultValue{}
 }
 
 func (c *Core) GetStackString() string {
@@ -199,28 +199,6 @@ func (c *Core) GetStackArray() []CoreValue {
 	return c.currentStack().ToArray()
 }
 
-func (c *Core) GetRegisterMap() map[string]int {
-	return map[string]int{
-		Reg_LoopC: getLoopCounter(c),
-		Reg_Flags: zeroFunc(c),
-		Reg_State: coreState(c),
-		Reg_Depth: StackDepth(c),
-		Reg_Count: StackCount(c),
-	}
-}
-
-func (c *Core) WriteLine(line string) {
-	c.Console = append(c.Console, line)
-}
-
-func (c *Core) ClearConsole() {
-	c.Console = make([]string, 0)
-}
-
-func (c *Core) GetMode() string {
-	return ModeNameMap[c.Mode]
-}
-
 func (c *Core) Store(key CoreValue, value CoreValue) {
 	if key.GetType() == FloatType {
 		index := key.GetInt()
@@ -241,52 +219,32 @@ func (c *Core) Store(key CoreValue, value CoreValue) {
 }
 
 func (c *Core) ShouldBreak() bool {
-	shouldBreak := c.breakFlag
-	c.breakFlag = false
+	shouldBreak := c.Regs.State.BreakFlag
+	c.Regs.State.BreakFlag = false
 	return shouldBreak
 }
 
-func zeroFunc(core *Core) int {
-	return 0
+func (c *Core) StackCount() int {
+	return c.currentStack().length
 }
 
-func StackCount(core *Core) int {
-	return core.currentStack().length
+func (c *Core) StackDepth() int {
+	return c.stackStack.length
 }
 
-func StackDepth(core *Core) int {
-	return core.stackStack.length
-}
-
-func coreState(core *Core) int {
-	return int(core.Mode) + boolToI[core.resultFlag]
-}
-
-func getLoopCounter(core *Core) int {
-	return core.loopCounter
-}
-
-func (c *Core) GetResultFlag() bool {
-	return c.resultFlag
-}
-
-func (c *Core) SetResultFlag(result bool) {
-	c.resultFlag = result
-}
-
-func (c *Core) SetInteractiveHandler(handler *InteractiveHandler) {
+func (c *Core) SetInteractiveHandler(handler InteractiveHandler) {
 	c.interactiveHandler = handler
 }
 
 func (c *Core) Mainloop() {
-	c.interactiveHandler.Output(c)
+	c.interactiveHandler.Display(c)
 	run := true
 	for run {
-		shouldContinue, input := c.interactiveHandler.Input(c)
+		shouldContinue, input := c.interactiveHandler.GetInput(c)
 		run = shouldContinue
 		if run {
 			c.ProcessRaw(input)
-			c.interactiveHandler.Output(c)
+			c.interactiveHandler.Display(c)
 		}
 	}
 }

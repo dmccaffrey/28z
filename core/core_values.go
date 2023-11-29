@@ -168,9 +168,9 @@ func (r ReferenceValue) GetSequence() []CoreValue {
 }
 
 func (r ReferenceValue) Dereference(core *Core) CoreValue {
-	reg, ok := core.GetRegisterMap()[r.value]
-	if ok {
-		return FloatValue{value: float64(reg)}
+	result := r.DereferenceRegister(core)
+	if result.GetType() != DefaultType {
+		return result
 	}
 	variable, ok := Variables[r.value]
 	if ok {
@@ -186,4 +186,12 @@ func (r ReferenceValue) Dereference(core *Core) CoreValue {
 
 func (r ReferenceValue) GetString() string {
 	return "REF/" + r.value
+}
+
+func (r ReferenceValue) DereferenceRegister(core *Core) CoreValue {
+	switch r.value {
+	case "loopCounter":
+		return FloatValue{value: float64(core.Regs.LoopCounter)}
+	}
+	return DefaultValue{}
 }

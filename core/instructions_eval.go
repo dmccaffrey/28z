@@ -1,7 +1,7 @@
 package core
 
 func ceval(core *Core) InstructionResult {
-	if core.GetResultFlag() {
+	if core.Regs.State.ResultFlag {
 		eval(core)
 	} else {
 		_ = consumeOne(core)
@@ -11,7 +11,7 @@ func ceval(core *Core) InstructionResult {
 
 func ceval2(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
-	if core.GetResultFlag() {
+	if core.Regs.State.ResultFlag {
 		_eval(y.GetSequence(), core)
 	} else {
 		_eval(x.GetSequence(), core)

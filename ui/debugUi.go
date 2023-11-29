@@ -25,42 +25,48 @@ var stackAliases = []string{"(x)", "(y)", "(z)", "   ", "   "}
 
 var lastUiUpdate = time.Now().Local()
 
-func Display(vm *core.Core) string {
+func (z Interactive28z) DisplayDebugUi(vm *core.Core) string {
 	var sb strings.Builder
 
-	if vm.Prompt != "" {
+	if z.prompt != "" {
 		sb.WriteString("\033[2m")
 	}
 
 	sb.WriteString(uiS0)
 	stack := vm.GetStackArray()
-	registerMap := vm.GetRegisterMap()
 	for i := 4; i >= 0; i-- {
-		regKey := core.RegisterKeys[i]
-		registerStr := fmt.Sprintf("%s: %04d", regKey, registerMap[regKey])
 		stackValue := ""
 		if i < len(stack) {
 			stackValue = stack[i].GetString()
 		}
 		stackStr := fmt.Sprintf("%s %1d: %-*s", stackAliases[i], i, 58, stackValue)
 		msgStr := ""
+		regStr := ""
 		switch i {
 		case 0:
-			msgStr = fmt.Sprintf("%-5s %s", "Last:", vm.LastInput)
+			msgStr = fmt.Sprintf("%-5s %s", "Last:", z.lastInput)
+			regStr = fmt.Sprintf("%-6s %s", "STATE:", StateToString(vm.Regs.State))
 			break
 		case 1:
-			msgStr = fmt.Sprintf("%-5s %s", "Err:", vm.Message)
+			msgStr = fmt.Sprintf("%-5s %s", "Err:", z.message)
+			regStr = fmt.Sprintf("%-6s %d", "LOOPC:", vm.Regs.Mode)
 			break
 		case 2:
-			msgStr = fmt.Sprintf("%-5s %s", "Mode:", vm.GetMode())
+			regStr = fmt.Sprintf("%-6s %d", "MODE:", vm.Regs.Mode)
+			break
+		case 3:
+			regStr = fmt.Sprintf("%-6s %d", "DEPTH:", vm.StackDepth())
+			break
+		case 4:
+			regStr = fmt.Sprintf("%-6s %d", "COUNT:", vm.StackCount())
 			break
 		}
-		sb.WriteString(fmt.Sprintf(" ║ %-*s ║ %-*.40s ║ %-*.30s ║\n", regWidth, registerStr, stackWidth, stackStr, msgWidth, msgStr))
+		sb.WriteString(fmt.Sprintf(" ║ %-*s ║ %-*.40s ║ %-*.30s ║\n", regWidth, regStr, stackWidth, stackStr, msgWidth, msgStr))
 	}
 	sb.WriteString(uiS3)
-	end := int(math.Min(float64(len(vm.Console)), float64(scrHeight)))
+	end := int(math.Min(float64(len(z.console)), float64(scrHeight)))
 	for i := 0; i < end; i++ {
-		sb.WriteString(fmt.Sprintf(" ║%-*.92s║\n", scrWidth, vm.Console[i]))
+		sb.WriteString(fmt.Sprintf(" ║%-*.92s║\n", scrWidth, z.console[i]))
 	}
 	for i := scrHeight - end; i > 0; i-- {
 		sb.WriteString(fmt.Sprintf(" ║%-*s║\n", scrWidth, ""))
@@ -70,13 +76,18 @@ func Display(vm *core.Core) string {
 	sb.WriteString(uiIn)
 	sb.WriteString(uiS5)
 
-	prompt := " > "
-	if vm.Prompt != "" {
+	promptLine := " > "
+	if z.prompt != "" {
 		sb.WriteString("\033[0m")
-		prompt = fmt.Sprintf("\0331 | Requested input: %s > \0330", vm.Prompt)
+		promptLine = fmt.Sprintf("\0331 | Requested input: %s > \0330", z.prompt)
 	}
 
-	sb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m %s", prompt))
-	vm.Prompt = ""
+	sb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m %s", promptLine))
 	return sb.String()
+}
+
+var b2i = map[bool]int8{false: 0, true: 1}
+
+func StateToString(r core.StateRegister) string {
+	return fmt.Sprintf("%d%d%d", b2i[r.ResultFlag], b2i[r.BreakFlag], b2i[r.PromptFlag])
 }
