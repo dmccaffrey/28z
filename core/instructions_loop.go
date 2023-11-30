@@ -20,7 +20,7 @@ func loopNotZero(core *Core) InstructionResult {
 		sequence = x.(SequenceValue).value
 	}
 	for core.Regs.LoopCounter != 0 {
-		_eval(sequence, core)
+		core.EvalSequence(sequence)
 		decrement(core)
 		if core.ShouldBreak() {
 			break

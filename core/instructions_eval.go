@@ -12,51 +12,16 @@ func ceval(core *Core) InstructionResult {
 func ceval2(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
 	if core.Regs.State.ResultFlag {
-		_eval(y.GetSequence(), core)
+		core.EvalSequence(y.GetSequence())
 	} else {
-		_eval(x.GetSequence(), core)
+		core.EvalSequence(x.GetSequence())
 	}
 	return successResult
 }
 
 func eval(core *Core) InstructionResult {
 	x := consumeOne(core)
-	return _eval(x.GetSequence(), core)
-}
-
-func _eval(sequence []CoreValue, core *Core) InstructionResult {
-	end := len(sequence) - 1
-
-	Logger.Printf("Evaluating sequence: len=%d, value=%s\n", len(sequence), sequence)
-	for i := end; i >= 0; i-- {
-		val := sequence[i]
-		switch val.GetType() {
-		case InstructionType:
-			Logger.Printf("[%d] Evaluating instruction: value=%s\n", i, val.GetString())
-			if !val.(InstructionValue).CheckArgs(core) {
-				return InstructionResult{true, "Too few arguments to instruction"}
-			}
-			result := val.(InstructionValue).Eval(core)
-			if result != successResult {
-				return result
-			}
-			break
-
-		case ReferenceType:
-			Logger.Printf("[%d] Dereferencing value: value=%s\n", i, val)
-			core.Push(val.(ReferenceValue).Dereference(core))
-			break
-
-		default:
-			Logger.Printf("[%d] Pushing value: value=%s\n", i, val)
-			core.Push(val)
-			break
-		}
-		if core.ShouldBreak() {
-			break
-		}
-	}
-	return successResult
+	return core.EvalSequence(x.GetSequence())
 }
 
 func apply(core *Core) InstructionResult {
@@ -86,7 +51,7 @@ func each(core *Core) InstructionResult {
 	for i, value := range y.GetSequence() {
 		core.Push(FloatValue{value: float64(i)})
 		core.Push(value)
-		_eval(x.GetSequence(), core)
+		core.EvalSequence(x.GetSequence())
 		if core.ShouldBreak() {
 			break
 		}

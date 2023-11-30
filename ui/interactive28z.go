@@ -50,7 +50,7 @@ func (z *Interactive28z) Display(vm *core.Core) {
 }
 
 func (z *Interactive28z) Output(line string) {
-
+	z.console = append(z.console, line)
 }
 
 func (z *Interactive28z) Prompt(vm *core.Core, prompt string) (bool, string) {
@@ -62,5 +62,5 @@ func (z *Interactive28z) Prompt(vm *core.Core, prompt string) (bool, string) {
 }
 
 func (z *Interactive28z) Clear() {
-
+	z.console = make([]string, 0)
 }

@@ -31,9 +31,7 @@ func main() {
 
 	z := ui.NewInteractive28z()
 	core.Logger.Printf("Initializing core\n")
-	vm := core.NewCore()
-	core.Logger.Printf("Setting interactive handler\n")
-	vm.SetInteractiveHandler(&z)
+	vm := core.NewCore(&z)
 	if *eval != "" {
 		core.Logger.Printf("Evaluating initial input: input=%s\n", *eval)
 		vm.ProcessRaw(*eval)

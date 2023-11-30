@@ -1,9 +1,15 @@
 package core
 
+import "time"
+
 const (
 	Running ExecutionMode = 1
 	Storing               = 2
 	Halted                = 3
+)
+
+const (
+	Stop ExecutionCommand = 1
 )
 
 const (
@@ -19,6 +25,7 @@ var RegisterKeys = []string{Reg_Count, Reg_Depth, Reg_State, Reg_Flags, Reg_Loop
 
 type (
 	ExecutionMode    int8
+	ExecutionCommand int8
 	RegisterFunction func(*Core) int
 	Core             struct {
 		stackStack         Stack[Stack[CoreValue]]
@@ -27,6 +34,10 @@ type (
 		Regs               Registers
 		Error              CoreValue
 		interactiveHandler InteractiveHandler
+		ticker100ms        time.Ticker
+		ticker1s           time.Ticker
+		input              chan string
+		control            chan ExecutionCommand
 	}
 	InteractiveHandler interface {
 		GetInput(*Core) (bool, string)
@@ -47,12 +58,55 @@ type (
 	}
 )
 
-func NewCore() Core {
+func NewCore(interactive InteractiveHandler) Core {
 	core := Core{}
 	core.stackStack.Push(NewCoreValueStack())
 	core.Regs.Mode = Running
 	core.Ram = make([]byte, 8192)
+	core.ticker100ms = *time.NewTicker(100 * time.Millisecond)
+	core.ticker1s = *time.NewTicker(1 * time.Second)
+	core.input = make(chan string)
+	core.control = make(chan ExecutionCommand)
+	core.interactiveHandler = interactive
+	go core.inputHandler()
 	return core
+}
+
+func (c *Core) inputHandler() {
+	for {
+		select {
+		case <-c.ticker100ms.C:
+			value, ok := Variables["tick100ms"]
+			if !ok {
+				continue
+			}
+			c.EvalSequenceIsolated(value.GetSequence())
+			break
+		case <-c.ticker1s.C:
+			value, ok := Variables["tick1s"]
+			if !ok {
+				continue
+			}
+			c.EvalSequenceIsolated(value.GetSequence())
+			break
+		case input := <-c.input:
+			c.ProcessRaw(input)
+			if c.interactiveHandler != nil {
+				c.interactiveHandler.Display(c)
+			}
+			break
+		case command := <-c.control:
+			if command == Stop {
+				c.halt()
+				return
+			}
+		}
+	}
+}
+
+func (c *Core) halt() {
+	c.ticker100ms.Stop()
+	c.ticker1s.Stop()
 }
 
 func (c *Core) currentStack() *Stack[CoreValue] {
@@ -118,7 +172,7 @@ func (c *Core) ProcessRaw(input string) {
 	}
 
 	if runReference {
-		result := _eval(value.GetSequence(), c)
+		result := c.EvalSequence(value.GetSequence())
 		if result.error {
 			Logger.Printf("Error: Failed to eval sequence: err=%s, seq=%s", result.message, value)
 			return
@@ -232,19 +286,57 @@ func (c *Core) StackDepth() int {
 	return c.stackStack.length
 }
 
-func (c *Core) SetInteractiveHandler(handler InteractiveHandler) {
-	c.interactiveHandler = handler
-}
-
 func (c *Core) Mainloop() {
 	c.interactiveHandler.Display(c)
-	run := true
-	for run {
+	for {
 		shouldContinue, input := c.interactiveHandler.GetInput(c)
-		run = shouldContinue
-		if run {
-			c.ProcessRaw(input)
-			c.interactiveHandler.Display(c)
+		if !shouldContinue {
+			c.control <- Stop
+			return
+		}
+		c.input <- input
+
+	}
+}
+
+func (c *Core) EvalSequenceIsolated(sequence []CoreValue) InstructionResult {
+	c.NewStack()
+	result := c.EvalSequence(sequence)
+	c.DropStack()
+	return result
+}
+
+func (c *Core) EvalSequence(sequence []CoreValue) InstructionResult {
+	end := len(sequence) - 1
+
+	Logger.Printf("Evaluating sequence: len=%d, value=%s\n", len(sequence), sequence)
+	for i := end; i >= 0; i-- {
+		val := sequence[i]
+		switch val.GetType() {
+		case InstructionType:
+			Logger.Printf("[%d] Evaluating instruction: value=%s\n", i, val.GetString())
+			if !val.(InstructionValue).CheckArgs(c) {
+				return InstructionResult{true, "Too few arguments to instruction"}
+			}
+			result := val.(InstructionValue).Eval(c)
+			if result != successResult {
+				return result
+			}
+			break
+
+		case ReferenceType:
+			Logger.Printf("[%d] Dereferencing value: value=%s\n", i, val)
+			c.Push(val.(ReferenceValue).Dereference(c))
+			break
+
+		default:
+			Logger.Printf("[%d] Pushing value: value=%s\n", i, val)
+			c.Push(val)
+			break
+		}
+		if c.ShouldBreak() {
+			break
 		}
 	}
+	return successResult
 }

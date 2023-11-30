@@ -88,7 +88,7 @@ func graph(core *Core) InstructionResult {
 	for col := 0; col < 92; col++ {
 		x := float64(col) * step
 		core.Push(FloatValue{value: float64(x)})
-		_eval(f.GetSequence(), core)
+		core.EvalSequence(f.GetSequence())
 		result := consumeOne(core)
 		results[col] = result.GetFloat()
 	}
