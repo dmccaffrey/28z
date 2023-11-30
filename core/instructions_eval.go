@@ -21,7 +21,8 @@ func ceval2(core *Core) InstructionResult {
 
 func eval(core *Core) InstructionResult {
 	x := consumeOne(core)
-	return core.EvalSequence(x.GetSequence())
+	core.EvalSequence(x.GetSequence())
+	return successResult
 }
 
 func apply(core *Core) InstructionResult {

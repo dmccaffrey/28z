@@ -80,6 +80,7 @@ func (c *Core) inputHandler() {
 			if !ok {
 				continue
 			}
+			Logger.Printf("Evaluating sequence for 100ms ticker\n")
 			c.EvalSequenceIsolated(value.GetSequence())
 			break
 		case <-c.ticker1s.C:
@@ -87,6 +88,7 @@ func (c *Core) inputHandler() {
 			if !ok {
 				continue
 			}
+			Logger.Printf("Evaluating sequence for 1s ticker\n")
 			c.EvalSequenceIsolated(value.GetSequence())
 			break
 		case input := <-c.input:
@@ -172,12 +174,7 @@ func (c *Core) ProcessRaw(input string) {
 	}
 
 	if runReference {
-		result := c.EvalSequence(value.GetSequence())
-		if result.error {
-			Logger.Printf("Error: Failed to eval sequence: err=%s, seq=%s", result.message, value)
-			return
-		}
-		return
+		c.EvalSequence(value.GetSequence())
 	}
 
 	c.Push(value)
@@ -299,14 +296,13 @@ func (c *Core) Mainloop() {
 	}
 }
 
-func (c *Core) EvalSequenceIsolated(sequence []CoreValue) InstructionResult {
+func (c *Core) EvalSequenceIsolated(sequence []CoreValue) {
 	c.NewStack()
-	result := c.EvalSequence(sequence)
+	c.EvalSequence(sequence)
 	c.DropStack()
-	return result
 }
 
-func (c *Core) EvalSequence(sequence []CoreValue) InstructionResult {
+func (c *Core) EvalSequence(sequence []CoreValue) {
 	end := len(sequence) - 1
 
 	Logger.Printf("Evaluating sequence: len=%d, value=%s\n", len(sequence), sequence)
@@ -316,12 +312,9 @@ func (c *Core) EvalSequence(sequence []CoreValue) InstructionResult {
 		case InstructionType:
 			Logger.Printf("[%d] Evaluating instruction: value=%s\n", i, val.GetString())
 			if !val.(InstructionValue).CheckArgs(c) {
-				return InstructionResult{true, "Too few arguments to instruction"}
+				return
 			}
-			result := val.(InstructionValue).Eval(c)
-			if result != successResult {
-				return result
-			}
+			c.ProcessInstruction(val.(InstructionValue))
 			break
 
 		case ReferenceType:
@@ -338,5 +331,4 @@ func (c *Core) EvalSequence(sequence []CoreValue) InstructionResult {
 			break
 		}
 	}
-	return successResult
 }
