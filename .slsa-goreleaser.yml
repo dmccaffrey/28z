@@ -6,13 +6,6 @@ env:
   - GO111MODULE=on
   - CGO_ENABLED=0
 
-# (Optional) Flags for the compiler.
-flags:
-  - -trimpath
-  - -tags=netgo
-
-binary: binary-{{ .Os }}-{{ .Arch }}
-
 builds:
   - id: binary
     dir: cmd/slsa-provenance
@@ -25,8 +18,6 @@ builds:
       - arm64
     goarm:
       - 8
-    ldflags:
-      - "{{ .Env.LDFLAGS }}"
 
 archives:
   - id: archive
