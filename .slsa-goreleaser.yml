@@ -11,24 +11,44 @@ flags:
   - -trimpath
   - -tags=netgo
 
-# The OS to compile for. `GOOS` env variable will be set to this value.
-goos:
-  - linux
-  - darwin
-  - windows
-
-# The architecture to compile for. `GOARCH` env variable will be set to this value.
-goarch:
-  - amd64
-  - arm64
-
-# (Optional) Entrypoint to compile.
-# main: ./path/to/main.go
-
-# (Optional) Working directory. (default: root of the project)
-# dir: ./relative/path/to/dir
-
-# Binary output name.
-# {{ .Os }} will be replaced by goos field in the config file.
-# {{ .Arch }} will be replaced by goarch field in the config file.
 binary: binary-{{ .Os }}-{{ .Arch }}
+
+builds:
+  - id: binary
+    dir: cmd/slsa-provenance
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    goarm:
+      - 8
+    ldflags:
+      - "{{ .Env.LDFLAGS }}"
+
+archives:
+  - id: archive
+    format: tar.gz
+    replacements:
+      darwin: macOS
+    files:
+      - LICENSE*
+      - README*
+      - cosign.pub
+      - dist/*.sig
+    format_overrides:
+      - goos: windows
+        format: zip
+
+sboms:
+  - id: archive-sbom
+    cmd: syft
+    args: ["${artifact}", "--file", "${artifact}.sbom.json", "--output", "spdx-json"]
+    documents:
+      - "${artifact}.sbom.json"
+    artifacts: archive
+
+checksum:
+  name_template: 'checksums.txt'
