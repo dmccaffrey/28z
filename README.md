@@ -26,23 +26,47 @@ References can also be specified with a preceeding percent sign (%) in interacti
 
 ## Supported instructions
 
-### this
-- Description: Refer to the current sequence
+### eval
+- Description: Evaluate x
+- Arg count: 1
+- Result count: 0
+- Usage: 
+
+### drop
+- Description: Drop x
+- Arg count: 1
+- Result count: 0
+- Usage: drop ⤶
+
+### files
+- Description: List availabel files in ROM
 - Arg count: 0
-- Result count: 1
-- Usage: this ⤶
+- Result count: 0
+- Usage: files ⤶ [files]⥱Console
 
-### exchange
-- Description: Exchange y and the value in var x
+### >
+- Description: Define sequence
+- Arg count: 0
+- Result count: 0
+- Usage: > ⤶
+
+### store
+- Description: Store y into x, preserving y
 - Arg count: 2
 - Result count: 1
-- Usage: 3 ⤶ 'a ⤶ exchange ⤶ ⤒a 3⥗a
+- Usage: 2 ⤶ 'a ⤶ put ⤶ ⤒2; y⥗a
 
-### pair
-- Description: Collect x and y into x
-- Arg count: 2
-- Result count: 1
-- Usage: 1 ⤶ 2 ⤶ collect ⤶ ⤒[2]:1,2
+### clear
+- Description: Clear stack
+- Arg count: 0
+- Result count: 0
+- Usage: clear ⤶
+
+### inspect
+- Description: Write a raw object to file
+- Arg count: 1
+- Result count: 0
+- Usage: 
 
 ### render
 - Description: Render RAM as buffer
@@ -50,17 +74,11 @@ References can also be specified with a preceeding percent sign (%) in interacti
 - Result count: 0
 - Usage: render ⤶
 
-### reduce
-- Description: Use x to reduce y to a single value
-- Arg count: 2
+### prompt
+- Description: Prompt the user for a value
+- Arg count: 1
 - Result count: 1
-- Usage: reduce ⤶
-
-### ==
-- Description: Set the result flag to 1 if x = y
-- Arg count: 2
-- Result count: 0
-- Usage: 
+- Usage: 'Enter x ⤶ prompt ⤶
 
 ### stream
 - Description: Apply x to renderable RAM
@@ -68,23 +86,137 @@ References can also be specified with a preceeding percent sign (%) in interacti
 - Result count: 0
 - Usage: 
 
-### setloop
-- Description: Set loop counter to x
+### mod
+- Description: y modulus by x
+- Arg count: 2
+- Result count: 1
+- Usage: 6 ⤶ 2 ⤶ / ⤶ ⤒0
+
+### cos
+- Description: cos of x
+- Arg count: 1
+- Result count: 1
+- Usage: 
+
+### deref
+- Description: Derefernce x, replacing x
+- Arg count: 1
+- Result count: 1
+- Usage: 'a ⤶ deref ⤶ ⤒a
+
+### pair
+- Description: Collect x and y into x
+- Arg count: 2
+- Result count: 1
+- Usage: 1 ⤶ 2 ⤶ collect ⤶ ⤒[2]:1,2
+
+### dec
+- Description: Decrement the loop register
+- Arg count: 0
+- Result count: 0
+- Usage: dec
+
+### apply
+- Description: Evalue x against all entries in y to modify y
+- Arg count: 2
+- Result count: 1
+- Usage: apply ⤶
+
+### exchange
+- Description: Exchange y and the value in var x
+- Arg count: 2
+- Result count: 1
+- Usage: 3 ⤶ 'a ⤶ exchange ⤶ ⤒a 3⥗a
+
+### purge
+- Description: Purge x
 - Arg count: 1
 - Result count: 0
-- Usage: 5 ⤶ setloop ⤶
+- Usage: 'a ⤶ purge ⤶ undefined⥗a
 
-### stop
-- Description: Stop the current loop
+### repeat
+- Description: Execute x repeatedly
+- Arg count: 1
+- Result count: 0
+- Usage: 0 ⤶ < ⤶'f ⤶ repeat ⤶
+
+### inverse
+- Description: Inverts x
+- Arg count: 1
+- Result count: 1
+- Usage: 
+
+### move
+- Description: Store y into x
+- Arg count: 2
+- Result count: 0
+- Usage: 2 ⤶ 'a ⤶ asref ⤶ y⥗a
+
+### collect
+- Description: Collect stack into x
+- Arg count: 1
+- Result count: 1
+- Usage: 1 ⤶ 2 ⤶ collect ⤶ ⤒[2]:1,2
+
+### show
+- Description: Render and pause
 - Arg count: 0
 - Result count: 0
 - Usage: 
 
-### <
-- Description: Define sequence
+### >=
+- Description: Set the result flag to 1 if y >= x
+- Arg count: 2
+- Result count: 0
+- Usage: 
+
+### sleep
+- Description: Sleep for x ms
+- Arg count: 1
+- Result count: 0
+- Usage: 
+
+### graph
+- Description: Graph a sequence
+- Arg count: 3
+- Result count: 0
+- Usage: graph ⤶
+
+### status
+- Description: Display status
 - Arg count: 0
 - Result count: 0
-- Usage: < ⤶
+- Usage: 
+
+### v+
+- Description: Addition for all permuations of x and y
+- Arg count: 2
+- Result count: 1
+- Usage: 
+
+### produce
+- Description: Pop from this stack and push to previous
+- Arg count: 1
+- Result count: 0
+- Usage: produce ⤶
+
+### <=
+- Description: Set the result flag to 1 if y <= x
+- Arg count: 2
+- Result count: 0
+- Usage: 
+
+### -
+- Description: Subtract x from y
+- Arg count: 2
+- Result count: 1
+- Usage: 6 ⤶ 2 ⤶ - ⤶ ⤒4
+
+### halt
+- Description: Halt execution
+- Arg count: 0
+- Result count: 0
+- Usage: halt ⤶
 
 ### expand
 - Description: Expand x into the stack
@@ -98,131 +230,11 @@ References can also be specified with a preceeding percent sign (%) in interacti
 - Result count: 0
 - Usage: 'Hello world ⤶ print ⤶ Hello world⥱Console
 
-### files
-- Description: List availabel files in ROM
-- Arg count: 0
-- Result count: 0
-- Usage: files ⤶ [files]⥱Console
-
-### store
-- Description: Store y into x
-- Arg count: 2
-- Result count: 1
-- Usage: 2 ⤶ 'a ⤶ store ⤶ ⤒2; y⥗a
-
-### ceval2
-- Description: Conditionally evaluate y if result flag is 1, otherwise evaluate x
-- Arg count: 2
-- Result count: 0
-- Usage: ⤒<sequence>, ⤒<sequence> | ceval2 ⤶
-
-### produce
-- Description: Pop from this stack and push to previous
-- Arg count: 1
-- Result count: 0
-- Usage: produce ⤶
-
-### clearbuf
-- Description: Clear the output buffer
+### unset
+- Description: Sets the result flat to 0
 - Arg count: 0
 - Result count: 0
 - Usage: 
-
-### -
-- Description: Subtract x from y
-- Arg count: 2
-- Result count: 1
-- Usage: 6 ⤶ 2 ⤶ - ⤶ ⤒4
-
-### end
-- Description: Return from function
-- Arg count: 0
-- Result count: 0
-- Usage: end ⤶
-
-### generate
-- Description: Evaluate a pair where y is the last input and x is the generator
-- Arg count: 1
-- Result count: 1
-- Usage: ⤒<pair> ⤶ generate ⤶ ⤒<pair>, ⤒<result>
-
-### loop
-- Description: Execute x if the loop counter is not zero
-- Arg count: 0
-- Result count: 0
-- Usage: 5 ⤶ setloop ⤶ ⤒<sequence> | loop ⤶
-
-### mmap
-- Description: Map a file to RAM
-- Arg count: 1
-- Result count: 0
-- Usage: 'rom/file.raw ⤶ mmap ⤶ file.byes⥱RAM
-
-### <=
-- Description: Set the result flag to 1 if y <= x
-- Arg count: 2
-- Result count: 0
-- Usage: 
-
-### v+
-- Description: Addition for all permuations of x and y
-- Arg count: 2
-- Result count: 1
-- Usage: 
-
-### inverse
-- Description: Inverts x
-- Arg count: 1
-- Result count: 1
-- Usage: 
-
-### cos
-- Description: cos of x
-- Arg count: 1
-- Result count: 1
-- Usage: 
-
-### purge
-- Description: Purge x
-- Arg count: 1
-- Result count: 0
-- Usage: 'a ⤶ purge ⤶ undefined⥗a
-
-### drop
-- Description: Drop x
-- Arg count: 1
-- Result count: 0
-- Usage: drop ⤶
-
-### repeat
-- Description: Execute x repeatedly
-- Arg count: 4
-- Result count: 0
-- Usage: 0 ⤶ < ⤶'f ⤶ repeat ⤶
-
-### eval
-- Description: Evaluate x
-- Arg count: 1
-- Result count: 0
-- Usage: 
-
-### rand
-- Description: Generate random between 0 and 1
-- Arg count: 0
-- Result count: 1
-- Usage: 
-
-### consume
-- Description: Pop from previous stack and push to current
-- Arg count: 0
-- Result count: 1
-- Usage: consume ⤶
-
-### recall
-- Description: Recall x
-- Arg count: 1
-- Result count: 1
-- Usage: 'a ⤶ recall ⤶ ⤒a
 
 ### *
 - Description: Multiply y by x
@@ -230,51 +242,27 @@ References can also be specified with a preceeding percent sign (%) in interacti
 - Result count: 1
 - Usage: 6 ⤶ 2 ⤶ * ⤶ ⤒12
 
+### /
+- Description: Divide y by x
+- Arg count: 2
+- Result count: 1
+- Usage: 6 ⤶ 2 ⤶ / ⤶ ⤒3
+
+### this
+- Description: Refer to the current sequence
+- Arg count: 0
+- Result count: 1
+- Usage: this ⤶
+
 ### zero
 - Description: Zero RAM
 - Arg count: 0
 - Result count: 0
 - Usage: 
 
-### dec
-- Description: Decrement the loop register
-- Arg count: 0
-- Result count: 0
-- Usage: dec
-
-### sleep
-- Description: Sleep for x ms
-- Arg count: 1
-- Result count: 0
-- Usage: 
-
-### apply
-- Description: Evalue x against all entries in y to modify y
+### ==
+- Description: Set the result flag to 1 if x = y
 - Arg count: 2
-- Result count: 1
-- Usage: apply ⤶
-
-### each
-- Description: Evaluate x against all entries in y
-- Arg count: 2
-- Result count: 0
-- Usage: 
-
-### enter
-- Description: Enter function
-- Arg count: 0
-- Result count: 0
-- Usage: enter ⤶
-
-### !=
-- Description: Set the result flag to 1 if x != y
-- Arg count: 2
-- Result count: 0
-- Usage: 
-
-### unset
-- Description: Sets the result flat to 0
-- Arg count: 0
 - Result count: 0
 - Usage: 
 
@@ -284,50 +272,56 @@ References can also be specified with a preceeding percent sign (%) in interacti
 - Result count: 0
 - Usage: ⤒<sequence> | ceval ⤶
 
-### inspect
-- Description: Write a raw object to file
-- Arg count: 1
-- Result count: 0
-- Usage: 
-
-### dup
-- Description: Duplicates x on the stack
-- Arg count: 1
-- Result count: 2
-- Usage: 
-
-### graph
-- Description: Graph a sequence
-- Arg count: 3
-- Result count: 0
-- Usage: graph ⤶
-
-### halt
-- Description: Halt execution
+### end
+- Description: Return from function
 - Arg count: 0
 - Result count: 0
-- Usage: halt ⤶
+- Usage: end ⤶
 
-### swap
-- Description: Swap x and y
-- Arg count: 2
-- Result count: 2
-- Usage: swap ⤶ ⤒x,y
+### clearbuf
+- Description: Clear the output buffer
+- Arg count: 0
+- Result count: 0
+- Usage: 
 
-### collect
-- Description: Collect stack into x
+### mmap
+- Description: Map a file to RAM
+- Arg count: 1
+- Result count: 0
+- Usage: 'rom/file.raw ⤶ mmap ⤶ file.byes⥱RAM
+
+### sin
+- Description: sin of x
 - Arg count: 1
 - Result count: 1
-- Usage: 1 ⤶ 2 ⤶ collect ⤶ ⤒[2]:1,2
+- Usage: 
 
-### >=
-- Description: Set the result flag to 1 if y >= x
+### <
+- Description: Define sequence
+- Arg count: 0
+- Result count: 0
+- Usage: < ⤶
+
+### each
+- Description: Evaluate x against all entries in y
 - Arg count: 2
 - Result count: 0
 - Usage: 
 
-### status
-- Description: Display status
+### setloop
+- Description: Set loop counter to x
+- Arg count: 1
+- Result count: 0
+- Usage: 5 ⤶ setloop ⤶
+
+### loop
+- Description: Execute x if the loop counter is not zero
+- Arg count: 0
+- Result count: 0
+- Usage: 5 ⤶ setloop ⤶ ⤒<sequence> | loop ⤶
+
+### stop
+- Description: Stop the current loop
 - Arg count: 0
 - Result count: 0
 - Usage: 
@@ -338,51 +332,63 @@ References can also be specified with a preceeding percent sign (%) in interacti
 - Result count: 1
 - Usage: 6 ⤶ 2 ⤶ + ⤶ ⤒8
 
-### sin
-- Description: sin of x
-- Arg count: 1
+### rand
+- Description: Generate random between 0 and 1
+- Arg count: 0
 - Result count: 1
 - Usage: 
 
-### put
-- Description: Put y into x
+### reduce
+- Description: Use x to reduce y to a single value
 - Arg count: 2
-- Result count: 0
-- Usage: 2 ⤶ 'a ⤶ store ⤶ y⥗a
+- Result count: 1
+- Usage: reduce ⤶
 
-### show
-- Description: Render and pause
+### swap
+- Description: Swap x and y
+- Arg count: 2
+- Result count: 2
+- Usage: swap ⤶ ⤒x,y
+
+### dup
+- Description: Duplicates x on the stack
+- Arg count: 1
+- Result count: 2
+- Usage: 
+
+### consume
+- Description: Pop from previous stack and push to current
 - Arg count: 0
+- Result count: 1
+- Usage: consume ⤶
+
+### enter
+- Description: Enter function
+- Arg count: 0
+- Result count: 0
+- Usage: enter ⤶
+
+### get
+- Description: Dereference x, preserving x
+- Arg count: 1
+- Result count: 1
+- Usage: 'a ⤶ get ⤶ ⤒a
+
+### !=
+- Description: Set the result flag to 1 if x != y
+- Arg count: 2
 - Result count: 0
 - Usage: 
 
-### prompt
-- Description: Prompt the user for a value
+### ceval2
+- Description: Conditionally evaluate y if result flag is 1, otherwise evaluate x
+- Arg count: 2
+- Result count: 0
+- Usage: ⤒<sequence>, ⤒<sequence> | ceval2 ⤶
+
+### generate
+- Description: Evaluate a pair where y is the last input and x is the generator
 - Arg count: 1
 - Result count: 1
-- Usage: 'Enter x ⤶ prompt ⤶
-
-### /
-- Description: Divide y by x
-- Arg count: 2
-- Result count: 1
-- Usage: 6 ⤶ 2 ⤶ / ⤶ ⤒3
-
-### mod
-- Description: y modulus by x
-- Arg count: 2
-- Result count: 1
-- Usage: 6 ⤶ 2 ⤶ / ⤶ ⤒0
-
-### >
-- Description: Define sequence
-- Arg count: 0
-- Result count: 0
-- Usage: > ⤶
-
-### clear
-- Description: Clear stack
-- Arg count: 0
-- Result count: 0
-- Usage: clear ⤶
+- Usage: ⤒<pair> ⤶ generate ⤶ ⤒<pair>, ⤒<result>
 

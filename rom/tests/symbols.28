@@ -3,7 +3,7 @@ setloop
 <
     $LOOPC
     $LOOPC
-    put
+    store
 >
 loop
 render

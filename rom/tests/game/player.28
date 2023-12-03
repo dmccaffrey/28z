@@ -1,0 +1,25 @@
+# func DrawPc
+<
+    23
+    128
+    +
+    $pc
+    store
+>
+'fDrawPc
+store
+
+# func SetPc
+<
+    deref
+    128
+    ==
+    <
+        'pc
+        store
+    >
+    ceval
+    drop
+>
+'fSetPc
+store

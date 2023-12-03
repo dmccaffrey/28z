@@ -175,6 +175,7 @@ func (c *Core) ProcessRaw(input string) {
 
 	if runReference {
 		c.EvalSequence(value.GetSequence())
+		return
 	}
 
 	c.Push(value)

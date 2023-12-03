@@ -11,7 +11,7 @@ func store(core *Core) InstructionResult {
 	return successResult
 }
 
-func put(core *Core) InstructionResult {
+func move(core *Core) InstructionResult {
 	x, y := consumeTwo(core)
 	core.Store(x, y)
 	return successResult
@@ -28,7 +28,7 @@ func exchange(core *Core) InstructionResult {
 	return successResult
 }
 
-func recall(core *Core) InstructionResult {
+func get(core *Core) InstructionResult {
 	x := consumeOne(core)
 	if x.GetType() == FloatType && int(x.GetFloat()) < len(core.Ram) {
 		core.Push(FloatValue{value: float64(core.Ram[int(x.GetFloat())])})
@@ -40,6 +40,11 @@ func recall(core *Core) InstructionResult {
 	}
 	core.Push(val)
 	return successResult
+}
+
+func deref(core *Core) InstructionResult {
+	duplicate(core)
+	return get(core)
 }
 
 func purge(core *Core) InstructionResult {

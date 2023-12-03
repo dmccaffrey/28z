@@ -1,57 +1,27 @@
 'tests/game/bg.sym
 mmap
+render
 
 # Initialize player position
 <
     $render-bytes
     rand
     *
-    dup
-    recall
-    0
+    deref
+    128
     ==
     <
         'pc
-        put
+        store
         stop
     >
-    <
-        drop
-    >
-    ceval2
+    ceval
+    drop
 >
-100
-setloop
-loop
+repeat
 
-# func DrawPc
-<
-    23
-    128
-    +
-    $pc
-    put
->
-'fDrawPc
-put
-
-# func SetPc
-<
-    dup
-    recall
-    0
-    ==
-    <
-        'pc
-        put
-    >
-    <
-        drop
-    >
-    ceval2
->
-'fSetPc
-put
+%fDrawPc
+stop
 
 # Main loop
 <
@@ -63,12 +33,12 @@ put
     'Direction?
     prompt
     'direction
-    put
+    store
 
     # Erase previous position
     0
     $pc
-    put
+    store
 
     # Move down
     $direction

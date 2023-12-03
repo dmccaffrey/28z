@@ -8,7 +8,7 @@ setloop
     <
         5
         $LOOPC
-        put
+        store
         5
         sleep
     >
@@ -25,16 +25,16 @@ setloop
     setloop
     <
         $LOOPC
-        recall
+        get
         0
         !=
         <
             $LOOPC
-            recall
+            get
             1
             +
             $LOOPC
-            put
+            store
             show
             5
             sleep
