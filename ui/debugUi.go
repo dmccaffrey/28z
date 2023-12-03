@@ -14,12 +14,14 @@ var msgWidth = 30
 var scrWidth = 92
 var scrHeight = 30
 
-var uiS0 = fmt.Sprintf(" ╓%s╥%s╥%s╖\n", strings.Repeat("─", regWidth+2), strings.Repeat("─", stackWidth+2), strings.Repeat("┄", msgWidth+2))
-var uiS1 = fmt.Sprintf(" ╟%s╥%s╥%s╢\n", strings.Repeat("─", regWidth+2), strings.Repeat("─", stackWidth+2), strings.Repeat("┄", msgWidth+2))
-var uiS3 = fmt.Sprintf(" ╟%s╨%s╨%s╢\n", strings.Repeat("─", regWidth+2), strings.Repeat("─", stackWidth+2), strings.Repeat("┄", msgWidth+2))
+var uiS0 = fmt.Sprintf(" ╓%s╥%s╥%s╖\n", strings.Repeat("─", regWidth+2), strings.Repeat("─", stackWidth+2), strings.Repeat("─", msgWidth+2))
+var uiS1 = fmt.Sprintf(" ╟%s╥%s╥%s╢\n", strings.Repeat("─", regWidth+2), strings.Repeat("─", stackWidth+2), strings.Repeat("─", msgWidth+2))
+var uiS3 = fmt.Sprintf(" ╟%s╨%s╨%s╢\n", strings.Repeat("─", regWidth+2), strings.Repeat("─", stackWidth+2), strings.Repeat("─", msgWidth+2))
 var uiS4 = fmt.Sprintf(" ╟%s╢\n", strings.Repeat("─", 92))
 var uiIn = fmt.Sprintf(" ║  %*s ║\n", 89, "")
 var uiS5 = fmt.Sprintf(" ╙─%s╜\n", strings.Repeat("─", 91))
+var startDim = "\033[2m"
+var endDim = "\033[0m"
 
 var stackAliases = []string{"(x)", "(y)", "(z)", "   ", "   "}
 
@@ -29,7 +31,7 @@ func (z Interactive28z) DisplayDebugUi(vm *core.Core) string {
 	var sb strings.Builder
 
 	if z.prompt != "" {
-		sb.WriteString("\033[2m")
+		sb.WriteString(startDim)
 	}
 
 	sb.WriteString(uiS0)
@@ -78,7 +80,7 @@ func (z Interactive28z) DisplayDebugUi(vm *core.Core) string {
 
 	promptLine := " > "
 	if z.prompt != "" {
-		sb.WriteString("\033[0m")
+		sb.WriteString(endDim)
 		promptLine = fmt.Sprintf("\0331 | Requested input: %s > \0330", z.prompt)
 	}
 
