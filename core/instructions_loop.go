@@ -19,8 +19,9 @@ func loopNotZero(core *Core) InstructionResult {
 	} else {
 		sequence = x.(SequenceValue).value
 	}
-	for core.Regs.LoopCounter != 0 {
-		core.EvalSequence(sequence)
+	run := true
+	for core.Regs.LoopCounter != 0 && run {
+		run = core.EvalSequence(sequence)
 		decrement(core)
 		if core.ShouldBreak() {
 			break
