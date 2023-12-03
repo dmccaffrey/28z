@@ -43,7 +43,7 @@ type (
 		GetInput(*Core) (bool, string)
 		Display(*Core)
 		Output(string)
-		Prompt(*Core, string) (bool, string)
+		Prompt(*Core, string)
 		Clear()
 	}
 	Registers struct {

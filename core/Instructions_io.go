@@ -134,14 +134,7 @@ func xyToOffset(x int, y int) int {
 
 func prompt(core *Core) InstructionResult {
 	x := consumeOne(core)
-	valid, input := core.interactiveHandler.Prompt(core, x.GetString())
-	if valid {
-		value := RawToImmediateCoreValue(input)
-		core.Push(value)
-
-	} else {
-		core.Push(DefaultValue{})
-	}
+	core.interactiveHandler.Prompt(core, x.GetString())
 	return successResult
 }
 
