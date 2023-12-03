@@ -93,3 +93,19 @@ func reduce(core *Core) InstructionResult {
 	core.Push(lastResult)
 	return successResult
 }
+
+func generate(core *Core) InstructionResult {
+	x := consumeOne(core).GetSequence()
+	if len(x) != 2 {
+		return InstructionResult{true, "Invalid generator sequence"}
+	}
+	core.NewStack()
+	core.Push(x[0])
+	core.EvalSequence(x[1].GetSequence())
+	result := consumeOne(core)
+	x[0] = result
+	core.DropStack()
+	core.Push(SequenceValue{value: x})
+	core.Push(result)
+	return successResult
+}

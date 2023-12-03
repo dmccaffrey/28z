@@ -89,3 +89,9 @@ func duplicate(core *Core) InstructionResult {
 	core.Push(x)
 	return successResult
 }
+
+func pair(core *Core) InstructionResult {
+	x, y := consumeTwo(core)
+	core.Push(SequenceValue{value: []CoreValue{y, x}})
+	return successResult
+}
