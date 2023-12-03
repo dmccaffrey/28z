@@ -296,13 +296,14 @@ func (c *Core) Mainloop() {
 	}
 }
 
-func (c *Core) EvalSequenceIsolated(sequence []CoreValue) {
+func (c *Core) EvalSequenceIsolated(sequence []CoreValue) bool {
 	c.NewStack()
-	c.EvalSequence(sequence)
+	result := c.EvalSequence(sequence)
 	c.DropStack()
+	return result
 }
 
-func (c *Core) EvalSequence(sequence []CoreValue) {
+func (c *Core) EvalSequence(sequence []CoreValue) bool {
 	end := len(sequence) - 1
 
 	Logger.Printf("Evaluating sequence: len=%d, value=%s\n", len(sequence), sequence)
@@ -312,7 +313,7 @@ func (c *Core) EvalSequence(sequence []CoreValue) {
 		case InstructionType:
 			Logger.Printf("[%d] Evaluating instruction: value=%s\n", i, val.GetString())
 			if !val.(InstructionValue).CheckArgs(c) {
-				return
+				return false
 			}
 			c.ProcessInstruction(val.(InstructionValue))
 			break
@@ -328,7 +329,8 @@ func (c *Core) EvalSequence(sequence []CoreValue) {
 			break
 		}
 		if c.ShouldBreak() {
-			break
+			return false
 		}
 	}
+	return true
 }

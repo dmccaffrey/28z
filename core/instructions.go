@@ -70,7 +70,7 @@ var instructionMap = map[string]Instruction{
 	"mmap":     {"Map a file to RAM", 1, 0, mmap, "'rom/file.raw ⤶ mmap ⤶ file.byes⥱RAM"},
 	"stream":   {"Apply x to renderable RAM", 1, 0, stream, ""},
 	"zero":     {"Zero RAM", 0, 0, zero, ""},
-	"repeat":   {"Execute x repeatedly", 4, 0, repeat, "0 ⤶ < ⤶'f ⤶ repeat ⤶"},
+	"repeat":   {"Execute x repeatedly", 1, 0, repeat, "0 ⤶ < ⤶'f ⤶ repeat ⤶"},
 	"<=":       {"Set the result flag to 1 if y <= x", 2, 0, lessThan, ""},
 	">=":       {"Set the result flag to 1 if y >= x", 2, 0, greaterThan, ""},
 	"==":       {"Set the result flag to 1 if x = y", 2, 0, equals, ""},
@@ -105,10 +105,6 @@ func OutputInstructionHelpDoc() {
 
 func halt(core *Core) InstructionResult {
 	core.Regs.Mode = Halted
-	return successResult
-}
-
-func repeat(core *Core) InstructionResult {
 	return successResult
 }
 

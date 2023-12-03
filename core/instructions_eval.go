@@ -109,3 +109,12 @@ func generate(core *Core) InstructionResult {
 	core.Push(result)
 	return successResult
 }
+
+func repeat(core *Core) InstructionResult {
+	x := consumeOne(core).GetSequence()
+	completed := core.EvalSequence(x)
+	for i := 0; completed && i < 10000; i++ {
+		completed = core.EvalSequence(x)
+	}
+	return successResult
+}
