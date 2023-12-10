@@ -69,10 +69,10 @@ func mmap(core *Core) InstructionResult {
 
 func files(core *Core) InstructionResult {
 	for k := range Programs {
-		core.interactiveHandler.Output("Program: " + k)
+		core.Control <- CommandMessage{Command: Output, Arg: "Program: " + k}
 	}
 	for k := range RawData {
-		core.interactiveHandler.Output("Data: " + k)
+		core.Control <- CommandMessage{Command: Output, Arg: "Data: " + k}
 	}
 	return successResult
 }

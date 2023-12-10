@@ -29,15 +29,15 @@ func main() {
 	core.Logger.Printf("Initializing instruction map\n")
 	core.InitializeInstructionMap()
 
-	z := ui.NewInteractive28z()
+	c0 := core.NewCore()
+	z := ui.NewInteractive28z(c0)
 	core.Logger.Printf("Initializing core\n")
-	vm := core.NewCore(&z)
 	if *eval != "" {
 		core.Logger.Printf("Evaluating initial input: input=%s\n", *eval)
-		vm.ProcessRaw(*eval)
+		c0.Input <- *eval
 	}
 	core.Logger.Printf("Starting main loop\n")
-	vm.Mainloop()
+	z.Run()
 }
 
 func OutputHelpDocumentation() {

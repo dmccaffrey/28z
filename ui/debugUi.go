@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"bytes"
 	"dmccaffrey/28z/core"
 	"fmt"
 	"math"
@@ -27,15 +28,16 @@ var stackAliases = []string{"(x)", "(y)", "(z)", "   ", "   "}
 
 var lastUiUpdate = time.Now().Local()
 
-func (z Interactive28z) DisplayDebugUi(vm *core.Core) string {
-	var sb strings.Builder
+func (z *Interactive28z) GenerateDebugUi() []byte {
+	core.Logger.Printf("Displaying Debug UI\n")
+	var bb bytes.Buffer
 
 	if z.prompt != "" {
-		sb.WriteString(startDim)
+		bb.WriteString(startDim)
 	}
 
-	sb.WriteString(uiS0)
-	stack := vm.GetStackArray()
+	bb.WriteString(uiS0)
+	stack := z.core.GetStackArray()
 	for i := 4; i >= 0; i-- {
 		stackValue := ""
 		if i < len(stack) {
@@ -46,46 +48,47 @@ func (z Interactive28z) DisplayDebugUi(vm *core.Core) string {
 		regStr := ""
 		switch i {
 		case 0:
-			msgStr = fmt.Sprintf("%-5s %s", "Last:", z.lastInput)
-			regStr = fmt.Sprintf("%-6s %s", "STATE:", StateToString(vm.Regs.State))
+			msgStr = fmt.Sprintf("%-5s %s", "LAST:", z.lastInput)
+			regStr = fmt.Sprintf("%-6s %s", "STATE:", StateToString(z.core.Regs.State))
 			break
 		case 1:
-			msgStr = fmt.Sprintf("%-5s %s", "Err:", z.message)
-			regStr = fmt.Sprintf("%-6s %d", "LOOPC:", vm.Regs.Mode)
+			msgStr = fmt.Sprintf("%-5s %s", "ERR:", z.message)
+			regStr = fmt.Sprintf("%-6s %03d", "LOOPC:", z.core.Regs.Mode)
 			break
 		case 2:
-			regStr = fmt.Sprintf("%-6s %d", "MODE:", vm.Regs.Mode)
+			msgStr = fmt.Sprintf("%-5s %08d", "TICK:", z.core.Ticks)
+			regStr = fmt.Sprintf("%-6s %03d", "MODE:", z.core.Regs.Mode)
 			break
 		case 3:
-			regStr = fmt.Sprintf("%-6s %d", "DEPTH:", vm.StackDepth())
+			regStr = fmt.Sprintf("%-6s %03d", "DEPTH:", z.core.StackDepth())
 			break
 		case 4:
-			regStr = fmt.Sprintf("%-6s %d", "COUNT:", vm.StackCount())
+			regStr = fmt.Sprintf("%-6s %03d", "COUNT:", z.core.StackCount())
 			break
 		}
-		sb.WriteString(fmt.Sprintf(" ║ %-*s ║ %-*.40s ║ %-*.30s ║\n", regWidth, regStr, stackWidth, stackStr, msgWidth, msgStr))
+		bb.WriteString(fmt.Sprintf(" ║ %-*s ║ %-*.40s ║ %-*.30s ║\n", regWidth, regStr, stackWidth, stackStr, msgWidth, msgStr))
 	}
-	sb.WriteString(uiS3)
+	bb.WriteString(uiS3)
 	end := int(math.Min(float64(len(z.console)), float64(scrHeight)))
 	for i := 0; i < end; i++ {
-		sb.WriteString(fmt.Sprintf(" ║%-*.92s║\n", scrWidth, z.console[i]))
+		bb.WriteString(fmt.Sprintf(" ║%-*.92s║\n", scrWidth, z.console[i]))
 	}
 	for i := scrHeight - end; i > 0; i-- {
-		sb.WriteString(fmt.Sprintf(" ║%-*s║\n", scrWidth, ""))
+		bb.WriteString(fmt.Sprintf(" ║%-*s║\n", scrWidth, ""))
 
 	}
-	sb.WriteString(uiS4)
-	sb.WriteString(uiIn)
-	sb.WriteString(uiS5)
+	bb.WriteString(uiS4)
+	bb.WriteString(uiIn)
+	bb.WriteString(uiS5)
 
 	promptLine := " > "
 	if z.prompt != "" {
-		sb.WriteString(endDim)
+		bb.WriteString(endDim)
 		promptLine = fmt.Sprintf("\0331 | Requested input: %s > \0330", z.prompt)
 	}
 
-	sb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m %s", promptLine))
-	return sb.String()
+	bb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m %s ", promptLine))
+	return bb.Bytes()
 }
 
 var b2i = map[bool]int8{false: 0, true: 1}

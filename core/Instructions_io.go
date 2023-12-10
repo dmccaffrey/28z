@@ -14,18 +14,18 @@ func print(core *Core) InstructionResult {
 	if x.GetType() == ReferenceType {
 		x = x.(ReferenceValue).Dereference(core)
 	}
-	core.interactiveHandler.Output(x.GetString())
-	core.interactiveHandler.Display(core)
+	core.Control <- CommandMessage{Command: Output, Arg: x.GetString()}
+	core.Control <- CommandMessage{Command: StateUpdated, Arg: ""}
 	return successResult
 }
 
 func clearBuffer(core *Core) InstructionResult {
-	core.interactiveHandler.Clear()
+	core.Control <- CommandMessage{Command: Clear, Arg: ""}
 	return successResult
 }
 
 func render(core *Core) InstructionResult {
-	core.interactiveHandler.Clear()
+	core.Control <- CommandMessage{Command: Clear, Arg: ""}
 	for r := 0; r < 30; r++ {
 		var sb strings.Builder
 		for c := 0; c < 92; c++ {
@@ -41,14 +41,14 @@ func render(core *Core) InstructionResult {
 				sb.WriteRune(rune(value))
 			}
 		}
-		core.interactiveHandler.Output(sb.String())
+		core.Control <- CommandMessage{Command: Output, Arg: sb.String()}
 	}
 	return successResult
 }
 
 func show(core *Core) InstructionResult {
 	render(core)
-	core.interactiveHandler.Display(core)
+	core.Control <- CommandMessage{Command: StateUpdated, Arg: ""}
 
 	return successResult
 }
@@ -134,7 +134,7 @@ func xyToOffset(x int, y int) int {
 
 func prompt(core *Core) InstructionResult {
 	x := consumeOne(core)
-	core.interactiveHandler.Prompt(core, x.GetString())
+	core.Control <- CommandMessage{Command: Prompt, Arg: x.GetString()}
 	return successResult
 }
 

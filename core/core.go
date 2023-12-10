@@ -9,7 +9,11 @@ const (
 )
 
 const (
-	Stop ExecutionCommand = 1
+	Stop         ExecutionCommand = 1
+	Prompt                        = 2
+	Clear                         = 3
+	StateUpdated                  = 4
+	Output                        = 5
 )
 
 const (
@@ -28,23 +32,16 @@ type (
 	ExecutionCommand int8
 	RegisterFunction func(*Core) int
 	Core             struct {
-		stackStack         Stack[Stack[CoreValue]]
-		prevStack          *Stack[CoreValue]
-		Ram                []byte
-		Regs               Registers
-		Error              CoreValue
-		interactiveHandler InteractiveHandler
-		ticker100ms        time.Ticker
-		ticker1s           time.Ticker
-		input              chan string
-		control            chan ExecutionCommand
-	}
-	InteractiveHandler interface {
-		GetInput(*Core) (bool, string)
-		Display(*Core)
-		Output(string)
-		Prompt(*Core, string)
-		Clear()
+		stackStack  Stack[Stack[CoreValue]]
+		prevStack   *Stack[CoreValue]
+		Ram         []byte
+		Regs        Registers
+		Error       CoreValue
+		ticker100ms time.Ticker
+		ticker1s    time.Ticker
+		Input       chan string
+		Control     chan CommandMessage
+		Ticks       int64
 	}
 	Registers struct {
 		State       StateRegister
@@ -56,33 +53,37 @@ type (
 		BreakFlag  bool
 		PromptFlag bool
 	}
+	CommandMessage struct {
+		Command ExecutionCommand
+		Arg     string
+	}
 )
 
-func NewCore(interactive InteractiveHandler) Core {
+func NewCore() *Core {
 	core := Core{}
-	core.stackStack.Push(NewCoreValueStack())
+	core.NewStack()
 	core.Regs.Mode = Running
 	core.Ram = make([]byte, 8192)
 	core.ticker100ms = *time.NewTicker(100 * time.Millisecond)
 	core.ticker1s = *time.NewTicker(1 * time.Second)
-	core.input = make(chan string)
-	core.control = make(chan ExecutionCommand)
-	core.interactiveHandler = interactive
+	core.Input = make(chan string)
+	core.Control = make(chan CommandMessage)
+	core.Ticks = 0
 	go core.inputHandler()
-	return core
+	return &core
 }
 
 func (c *Core) inputHandler() {
 	for {
 		select {
 		case <-c.ticker100ms.C:
+			c.Ticks += 1
 			value, ok := Variables["tick100ms"]
 			if !ok {
 				continue
 			}
 			Logger.Printf("Evaluating sequence for 100ms ticker\n")
 			c.EvalSequenceIsolated(value.GetSequence())
-			break
 		case <-c.ticker1s.C:
 			value, ok := Variables["tick1s"]
 			if !ok {
@@ -90,19 +91,16 @@ func (c *Core) inputHandler() {
 			}
 			Logger.Printf("Evaluating sequence for 1s ticker\n")
 			c.EvalSequenceIsolated(value.GetSequence())
-			break
-		case input := <-c.input:
+		case input := <-c.Input:
 			c.ProcessRaw(input)
-			if c.interactiveHandler != nil {
-				c.interactiveHandler.Display(c)
-			}
-			break
-		case command := <-c.control:
-			if command == Stop {
+			c.Control <- CommandMessage{Command: StateUpdated, Arg: ""}
+		case message := <-c.Control:
+			if message.Command == Stop {
 				c.halt()
 				return
 			}
 		}
+		c.Control <- CommandMessage{Command: StateUpdated, Arg: ""}
 	}
 }
 
@@ -282,19 +280,6 @@ func (c *Core) StackCount() int {
 
 func (c *Core) StackDepth() int {
 	return c.stackStack.length
-}
-
-func (c *Core) Mainloop() {
-	c.interactiveHandler.Display(c)
-	for {
-		shouldContinue, input := c.interactiveHandler.GetInput(c)
-		if !shouldContinue {
-			c.control <- Stop
-			return
-		}
-		c.input <- input
-
-	}
 }
 
 func (c *Core) EvalSequenceIsolated(sequence []CoreValue) bool {
