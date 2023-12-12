@@ -1,39 +1,49 @@
 package ui
 
 import (
-	"bufio"
 	"dmccaffrey/28z/core"
-	"fmt"
-	"io"
-	"os"
 	"strings"
+	"time"
+
+	"github.com/mattn/go-tty"
 )
 
 type Interactive28z struct {
-	core      *core.Core
-	reader    *bufio.Reader
-	writer    io.Writer
-	lastInput string
-	prompt    string
-	message   string
-	console   []string
+	core         *core.Core
+	tty          *tty.TTY
+	lastInput    string
+	prompt       string
+	message      string
+	console      []string
+	runes        []rune
+	ticker       time.Ticker
+	input        chan rune
+	lastUiUpdate time.Time
+	run          bool
 }
 
 func NewInteractive28z(vm *core.Core) *Interactive28z {
 	z := Interactive28z{}
 	z.core = vm
-	z.reader = bufio.NewReader(os.Stdin)
-	z.writer = io.Writer(os.Stdout)
+	var err error
+	z.tty, err = tty.Open()
+	if err != nil {
+		panic(err)
+	}
 	z.console = make([]string, 0, 30)
 	z.lastInput = ""
 	z.message = ""
 	z.prompt = ""
+	z.runes = make([]rune, 0, 128)
+	z.ticker = *time.NewTicker(1 * time.Second)
+	z.input = make(chan rune)
+	z.run = true
 	return &z
 }
 
 func (z *Interactive28z) Display() {
-	fmt.Print("\033[H\033[2J")
-	z.writer.Write(z.GenerateDebugUi())
+	z.tty.Output().Write(z.GenerateDebugUi())
+	z.lastUiUpdate = time.Now()
 }
 
 func (z *Interactive28z) Output(line string) {
@@ -42,6 +52,7 @@ func (z *Interactive28z) Output(line string) {
 
 func (z *Interactive28z) Prompt(prompt string) {
 	z.prompt = prompt
+	z.Display()
 }
 
 func (z *Interactive28z) Clear() {
@@ -49,12 +60,13 @@ func (z *Interactive28z) Clear() {
 }
 
 func (z *Interactive28z) Run() {
-	go z.HandleEvents()
-	z.PollInput()
+	defer z.tty.Close()
+	z.Display()
+	go z.PollRune()
+	z.HandleEvents()
 }
 
 func (z *Interactive28z) HandleEvents() {
-	z.Display()
 	for {
 		select {
 		case message := <-z.core.Control:
@@ -71,24 +83,65 @@ func (z *Interactive28z) HandleEvents() {
 			case core.StateUpdated:
 				z.Display()
 			}
+		case r := <-z.input:
+			if !z.HandleRune(r) {
+				z.exit()
+				return
+			}
+			z.Display()
+		case <-z.ticker.C:
+			z.Display()
 		}
 	}
 }
 
-func (z *Interactive28z) PollInput() {
-	for {
-		input, err := z.reader.ReadString('\n')
+func (z *Interactive28z) exit() {
+	z.run = false
+	z.core.Halt()
+	z.ticker.Stop()
+	z.tty.Output().WriteString("\n\n  Bailing out, you are on your own. Good Luck.\n")
+}
+
+func (z *Interactive28z) ReadLine() string {
+	input, err := z.tty.ReadString()
+	if err != nil {
+		core.Logger.Printf("Failed to read input: err=%s\n", err.Error())
+		return ""
+	}
+	return strings.TrimSuffix(input, "\n")
+}
+
+func (z *Interactive28z) PollRune() {
+	for z.run {
+		r, err := z.tty.ReadRune()
 		if err != nil {
 			core.Logger.Printf("Failed to read input: err=%s\n", err.Error())
-			continue
-		}
-		input = strings.TrimSuffix(input, "\n")
-
-		if input == "exit" {
-			z.core.Control <- core.CommandMessage{Command: core.Stop, Arg: ""}
 			return
+		}
+		core.Logger.Printf("Read input: %s %d\n", string(r), r)
+		z.input <- r
+	}
+}
+
+func (z *Interactive28z) HandleRune(r rune) bool {
+	switch r {
+	case 127:
+		if len(z.runes) <= 0 {
+			return true
+		}
+		z.runes = z.runes[:len(z.runes)-1]
+	case 13:
+		input := string(z.runes)
+		z.runes = z.runes[:0]
+		if input == "exit" {
+
+			return false
 		}
 		z.lastInput = input
 		z.core.Input <- input
+		z.prompt = ""
+	default:
+		z.runes = append(z.runes, r)
 	}
+	return true
 }

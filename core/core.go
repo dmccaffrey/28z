@@ -94,17 +94,12 @@ func (c *Core) inputHandler() {
 		case input := <-c.Input:
 			c.ProcessRaw(input)
 			c.Control <- CommandMessage{Command: StateUpdated, Arg: ""}
-		case message := <-c.Control:
-			if message.Command == Stop {
-				c.halt()
-				return
-			}
 		}
 		c.Control <- CommandMessage{Command: StateUpdated, Arg: ""}
 	}
 }
 
-func (c *Core) halt() {
+func (c *Core) Halt() {
 	c.ticker100ms.Stop()
 	c.ticker1s.Stop()
 }

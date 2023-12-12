@@ -29,8 +29,9 @@ var stackAliases = []string{"(x)", "(y)", "(z)", "   ", "   "}
 var lastUiUpdate = time.Now().Local()
 
 func (z *Interactive28z) GenerateDebugUi() []byte {
-	core.Logger.Printf("Displaying Debug UI\n")
 	var bb bytes.Buffer
+
+	bb.WriteString("\033[H\033[2J")
 
 	if z.prompt != "" {
 		bb.WriteString(startDim)
@@ -87,7 +88,8 @@ func (z *Interactive28z) GenerateDebugUi() []byte {
 		promptLine = fmt.Sprintf("\0331 | Requested input: %s > \0330", z.prompt)
 	}
 
-	bb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m %s ", promptLine))
+	bb.WriteString(fmt.Sprintf("  \033[2A \x1b[31m28z\033[0m %s %s", promptLine, string(z.runes)))
+
 	return bb.Bytes()
 }
 
